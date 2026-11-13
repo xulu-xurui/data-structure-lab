@@ -345,21 +345,6 @@ function drawScene(vp){
     ctx.fillText(n.ch,p.x,p.y+1);
   });
   ctx.textBaseline='alphabetic';
-  if(ar&&!S.stereo){
-    var bw2=Math.min(W*0.86,520), bh2=bw2*0.62;
-    var bx=(W-bw2)/2, by=(H-bh2)/2;
-    ctx.save();
-    ctx.strokeStyle='rgba(120,220,255,.42)'; ctx.lineWidth=1.6; ctx.setLineDash([9,7]);
-    ctx.strokeRect(bx,by,bw2,bh2);
-    var L=26; ctx.setLineDash([]); ctx.lineWidth=2.6; ctx.strokeStyle='rgba(140,235,255,.85)';
-    [[bx,by,1,1],[bx+bw2,by,-1,1],[bx,by+bh2,1,-1],[bx+bw2,by+bh2,-1,-1]].forEach(function(c){
-      ctx.beginPath(); ctx.moveTo(c[0]+c[2]*L,c[1]); ctx.lineTo(c[0],c[1]); ctx.lineTo(c[0],c[1]+c[3]*L); ctx.stroke();
-    });
-    ctx.fillStyle='rgba(150,230,255,.72)'; ctx.font='13px "Microsoft YaHei",sans-serif';
-    ctx.textAlign='center';
-    ctx.fillText('把报告上的流程图对准这个框', W/2, by-14);
-    ctx.restore();
-  }
   if(!S.stereo) S.hit=hit;
 }
 
