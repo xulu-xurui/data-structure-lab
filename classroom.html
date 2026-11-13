@@ -354,7 +354,7 @@ function drawRoom(vp){
 
 /* ================= 关联线 + 卡片 ================= */
 function drawChalk(vp){
-  var p=project(0,2.15,-4.74,vp);
+  var p=project(0,2.02,-4.74,vp);
   if(!p) return;
   var f=p.f;
   ctx.save();
@@ -366,7 +366,7 @@ function drawChalk(vp){
   ctx.font=Math.round(0.085*f)+'px "Microsoft YaHei",sans-serif';
   ctx.globalAlpha=0.62;
   ctx.fillStyle='rgba(200,225,210,.9)';
-  ctx.fillText('先序 DLR　中序 LDR　后序 LRD　层次', p.x, p.y+0.24*f);
+  ctx.fillText('先序 DLR　中序 LDR　后序 LRD　层次', p.x, p.y-0.66*f);
   ctx.restore();
 }
 function drawLinks(vp){
