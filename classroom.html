@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>二叉树 · 教室 AR 课堂</title>
+<title>二叉树知识空间 · 教室</title>
 <style>
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;height:100%;overflow:hidden;background:#05070c;color:#dfe7f2;
@@ -11,72 +11,74 @@
   canvas{display:block;width:100%;height:100%;touch-action:none}
   .hud{position:fixed;background:rgba(10,15,24,.78);border:1px solid #22304a;border-radius:10px;
     backdrop-filter:blur(8px);font-size:12px}
-  #bar{left:14px;top:14px;padding:10px 12px;width:270px}
-  .row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+  #bar{left:14px;top:14px;padding:10px 12px;display:flex;gap:6px;flex-wrap:wrap;max-width:300px}
   button{padding:6px 9px;font-size:12px;border-radius:7px;border:1px solid #2b3a54;
     background:#121a28;color:#c6d2e2;cursor:pointer;font-family:inherit}
   button:hover{background:#1a2436}
   button.on{background:#1d4f66;border-color:#2f7f9e;color:#cdf1ff}
-  .label{color:#7d8da6;font-size:11px;margin:6px 0 3px}
-  #info{right:14px;top:14px;padding:10px 12px;width:160px;line-height:1.7;color:#93a3ba}
-  .chips{display:flex;gap:4px;flex-wrap:wrap;margin-top:2px;max-height:90px;overflow:hidden}
-  .chip{min-width:22px;height:22px;line-height:20px;text-align:center;border-radius:5px;font-size:12px;
-    border:1px solid #34647d;background:#0f2b38;color:#9adcf5;font-family:Consolas,monospace}
-  .chip.v{border-color:#2f6b48;background:#12301f;color:#8fe0a9}
-  #card{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(86vw,460px);
-    background:rgba(11,17,27,.96);border:1px solid #2f4a6b;border-radius:14px;padding:18px 20px;
-    display:none;z-index:30;box-shadow:0 20px 60px rgba(0,0,0,.6)}
-  #card.on{display:block}
-  #card h3{margin:0 0 10px;font-size:16px;color:#8fd3ff;font-weight:600}
-  #card p{margin:8px 0;font-size:13px;line-height:1.9;color:#b9c7da}
-  #card code{color:#9be7a8;font-family:Consolas,monospace;background:#0d1a26;padding:1px 5px;border-radius:4px}
-  #card .x{position:absolute;right:14px;top:12px;color:#5f7590;cursor:pointer;font-size:16px}
-  #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);padding:8px 14px;border-radius:9px;
+  #tip{right:14px;top:14px;padding:9px 12px;width:190px;line-height:1.7;color:#93a3ba}
+  #tip b{color:#9fd8ff;font-weight:600}
+  #compass{left:50%;bottom:16px;transform:translateX(-50%);width:150px;height:74px;background:none;border:none}
+  #panel{position:fixed;right:0;top:0;height:100%;width:min(430px,92vw);
+    background:rgba(9,14,22,.97);border-left:1px solid #24384f;transform:translateX(105%);
+    transition:transform .28s ease;z-index:30;display:flex;flex-direction:column}
+  #panel.on{transform:translateX(0)}
+  #panelHead{padding:16px 20px 12px;border-bottom:1px solid #1d2a3b;position:relative}
+  #panelHead .k{font-size:11px;color:#5d7d9c;letter-spacing:2px}
+  #panelHead h2{margin:4px 0 0;font-size:17px;color:#9fd8ff;font-weight:600}
+  #panelHead .x{position:absolute;right:16px;top:14px;color:#5d7d9c;cursor:pointer;font-size:18px}
+  #panelBody{padding:14px 20px 24px;overflow-y:auto;font-size:13px;line-height:1.95;color:#b9c7da}
+  #panelBody h4{color:#7fc4f0;font-size:13px;margin:16px 0 6px}
+  #panelBody p{margin:8px 0}
+  #panelBody code{color:#9be7a8;font-family:Consolas,monospace;background:#0d1a26;padding:1px 5px;border-radius:4px}
+  #panelBody pre{background:#0b141d;border:1px solid #1b2a3a;border-radius:8px;padding:10px 12px;
+    overflow-x:auto;color:#a8d8b9;font-size:12px;line-height:1.7;font-family:Consolas,monospace}
+  #panelBody .k{color:#ffd479}
+  #links{margin-top:20px;border-top:1px solid #1d2a3b;padding-top:12px}
+  #links .l{display:inline-block;margin:4px 6px 4px 0;padding:5px 10px;border-radius:14px;
+    background:#12212f;border:1px solid #26466a;color:#8ecbf0;font-size:12px;cursor:pointer}
+  #links .l:hover{background:#183049}
+  #toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);padding:8px 14px;border-radius:9px;
     background:rgba(12,18,28,.92);border:1px solid #26364f;font-size:12px;color:#a9b8cc;opacity:0;
     transition:.3s;pointer-events:none;z-index:40}
   #toast.show{opacity:1}
-  #hint{position:fixed;left:50%;top:46%;transform:translate(-50%,-50%);text-align:center;color:#6b7f9c;
-    font-size:13px;line-height:2;pointer-events:none;transition:.4s}
+  #hint{position:fixed;left:50%;bottom:104px;transform:translateX(-50%);text-align:center;color:#7d90aa;
+    font-size:12px;line-height:1.8;pointer-events:none;transition:.6s;background:rgba(10,16,26,.7);
+    padding:6px 12px;border-radius:8px}
   @media (max-width:560px){
-    #bar{left:8px;right:8px;top:8px;width:auto;max-height:46vh;overflow-y:auto;padding:8px}
-    #bar button{padding:8px 10px;font-size:13px}
-    #info{left:8px;right:8px;top:auto;bottom:8px;width:auto;padding:6px 10px;display:flex;gap:12px;align-items:center}
-    #info>div{margin-top:0!important;white-space:nowrap}
-    #info .chips{max-height:24px;overflow:hidden;flex:1}
-    #hint{font-size:12px;top:38%}
+    #bar{left:8px;right:8px;top:8px;max-width:none;padding:8px}
+    #tip{display:none}
+    #panel{width:100vw}
+    #hint{font-size:12px;top:40%}
   }
 </style>
 </head>
 <body>
 <canvas id="cv"></canvas>
+<canvas id="compass" width="300" height="148"></canvas>
 
 <div class="hud" id="bar">
-  <div class="row">
-    <button id="play">▶ 播放</button>
-    <button id="step">下一步</button>
-    <button id="reset">回到讲台</button>
-  </div>
-  <div class="row">
-    <button id="m-pre" class="on">先序</button>
-    <button id="m-in">中序</button>
-    <button id="m-post">后序</button>
-    <button id="m-level">层次</button>
-  </div>
-  <div class="row">
-    <button id="gyro">陀螺仪</button>
-    <button id="stereo">立体分屏</button>
-    <button id="labels" class="on">知识卡</button>
-  </div>
-  <div class="label">点房间里的知识卡可以展开讲解</div>
+  <button id="reset">回到中央</button>
+  <button id="gyro">陀螺仪</button>
+  <button id="stereo">立体分屏</button>
+  <button id="mapBtn" class="on">关联线</button>
 </div>
 
-<div class="hud" id="info">
-  <div>栈 / 队列</div><div class="chips" id="stack"></div>
-  <div style="margin-top:8px">已访问</div><div class="chips" id="visited"></div>
+<div class="hud" id="tip">
+  <div><b>10</b> 个知识点分布在教室里</div>
+  <div style="margin-top:6px">点卡片看详解<br>详解底部可跳到<a style="color:#8ecbf0">关联知识点</a></div>
 </div>
 
-<div id="card"><span class="x" id="cardX">✕</span><h3 id="cardT"></h3><div id="cardB"></div></div>
-<div id="hint">你正站在教室中间　·　拖动环顾四周<br>中间是二叉树，四周是知识点卡片</div>
+<div id="panel">
+  <div id="panelHead">
+    <div class="k" id="pK">KNOWLEDGE</div>
+    <h2 id="pT">标题</h2>
+    <span class="x" id="pX">✕</span>
+  </div>
+  <div id="panelBody"></div>
+</div>
+
+<div id="hint">你正站在教室中央　·　拖动环顾四周<br>四周漂浮的是二叉树的知识点，点一张卡片展开</div>
 <div id="toast"></div>
 
 <script>
@@ -85,55 +87,141 @@
 var cv=document.getElementById('cv'), ctx=cv.getContext('2d');
 var DPR=Math.min(window.devicePixelRatio||1,2);
 
-/* ================= 树 ================= */
-var SP=1.0;
-function parseTree(seq){
-  var i=0,nodes=[],id=0;
-  function build(d){ if(i>=seq.length) return -1; var ch=seq[i++]; if(ch==='#') return -1;
-    var me=id++; nodes.push({id:me,ch:ch,depth:d,l:-1,r:-1,x:0});
-    var l=build(d+1),r=build(d+1); nodes[me].l=l; nodes[me].r=r; return me; }
-  var root=build(0),c=0;
-  (function ino(n){ if(n<0) return; ino(nodes[n].l); nodes[n].x=c++; ino(nodes[n].r); })(root);
-  var maxD=0; nodes.forEach(function(n){ if(n.depth>maxD) maxD=n.depth; });
-  var half=(c-1)/2;
-  nodes.forEach(function(n){
-    n.px=(n.x-half)*SP; n.py=-(n.depth-maxD/2)*SP*0.95; n.pz=Math.sin(n.px*1.1)*0.22;
-  });
-  return {nodes:nodes,root:root,count:c,maxD:maxD,halfW:half*SP,halfH:maxD*SP/2};
-}
-function trace(tree,mode){
-  var ev=[],N=tree.nodes;
-  function v(n){ ev.push({t:'visit',n:n}); }
-  if(mode==='pre'){ var st=[tree.root];
-    while(st.length){ var p=st.pop(); v(p); if(N[p].r>=0) st.push(N[p].r); if(N[p].l>=0) st.push(N[p].l); } }
-  else if(mode==='in'){ var s2=[],p2=tree.root;
-    while(p2>=0||s2.length){ while(p2>=0){ s2.push(p2); p2=N[p2].l; } p2=s2.pop(); v(p2); p2=N[p2].r; } }
-  else if(mode==='post'){ var s3=[],p3=tree.root,last=-1;
-    while(p3>=0||s3.length){ while(p3>=0){ s3.push(p3); p3=N[p3].l; }
-      var top=s3[s3.length-1];
-      if(N[top].r>=0&&N[top].r!==last){ p3=N[top].r; }
-      else{ v(top); s3.pop(); last=top; p3=-1; } } }
-  else { var q=[tree.root];
-    while(q.length){ var p4=q.shift(); v(p4); if(N[p4].l>=0) q.push(N[p4].l); if(N[p4].r>=0) q.push(N[p4].r); } }
-  return ev;
-}
-function snapshots(ev){
-  var st=[],q=[],vis=[],out=[{stack:[],queue:[],visited:[]}];
-  for(var i=0;i<ev.length;i++){ var e=ev[i]; if(e.t==='visit') vis.push(e.n);
-    out.push({stack:st.slice(),queue:q.slice(),visited:vis.slice()}); }
-  return out;
-}
+/* ================= 知识点数据 ================= */
+var K=[
+ { id:0, t:'定义与术语', c:'#2f6f9e', at:0,
+   b:'<h4>什么是二叉树</h4>'+
+     '<p>二叉树是 <code>n (n≥0)</code> 个结点的有限集合：或为空树，或由一个根结点及两棵<b>互不相交</b>的、分别称为<b>左子树</b>和<b>右子树</b>的二叉树组成。</p>'+
+     '<h4>最容易错的一点</h4>'+
+     '<p>左右子树<b>有序</b>，不能互换。一个只有右孩子的结点，和一个只有左孩子的结点，是两棵不同的二叉树——这就是它和“度为 2 的普通树”的根本区别。</p>'+
+     '<h4>术语</h4>'+
+     '<p><span class="k">根</span>：最上面的结点　<span class="k">叶子</span>：度为 0 的结点<br>'+
+     '<span class="k">度</span>：结点拥有的子树个数（0/1/2）<br>'+
+     '<span class="k">层次</span>：根为第 1 层，往下递增<br>'+
+     '<span class="k">深度</span>：从根往下数；<span class="k">高度</span>：从叶子往上数；树的高度 = 最大层次</p>'+
+     '<h4>两个边界</h4>'+
+     '<p>空树高度为 <code>0</code>；只有根结点的树高度为 <code>1</code>。递归算法里这个 0/1 的区别决定了边界条件写 <code>if(T==NULL)</code> 还是 <code>if(T->lchild==NULL && T->rchild==NULL)</code>。</p>' },
+ { id:1, t:'特殊二叉树', c:'#3f7a52', at:36,
+   b:'<h4>满二叉树</h4>'+
+     '<p>每一层的结点数都达到最大。高度为 <code>h</code> 时共有 <code>2^h − 1</code> 个结点，叶子全部集中在最下一层。</p>'+
+     '<h4>完全二叉树</h4>'+
+     '<p>除最后一层外每层都满，且最后一层的结点<b>从左向右连续排列</b>，中间不能有空缺。</p>'+
+     '<p>把结点按层序从 1 开始编号，完全二叉树的编号与同高度满二叉树<b>一一对应</b>——这条性质是顺序存储的基础。</p>'+
+     '<h4>斜树</h4>'+
+     '<p>每层只有一个结点，全部是左孩子叫左斜树，全部是右孩子叫右斜树。它退化成一条链表，高度 = 结点数。</p>'+
+     '<h4>包含关系</h4>'+
+     '<p><code>满二叉树 ⊂ 完全二叉树 ⊂ 一般二叉树</code></p>'+
+     '<p>堆（大根堆/小根堆）就是一棵完全二叉树，所以能用数组存，下标关系直接算。</p>' },
+ { id:2, t:'五个性质', c:'#8a6a24', at:72,
+   b:'<h4>① 第 i 层最多 2^(i−1) 个结点</h4>'+
+     '<p>每往下一层，结点数最多翻倍。</p>'+
+     '<h4>② 高为 h 的二叉树最多 2^h − 1 个结点</h4>'+
+     '<p>等比数列求和：1+2+4+…+2^(h−1) = 2^h − 1。</p>'+
+     '<h4>③ n0 = n2 + 1</h4>'+
+     '<p>推导：结点总数 <code>n = n0+n1+n2</code>；再看边数，除根外每个结点都有一条边进来，<code>n−1 = n1 + 2n2</code>。两式相减得 <code>n0 = n2 + 1</code>。</p>'+
+     '<p>这条最常考：一棵树有 20 个叶子，则度为 2 的结点有 19 个。</p>'+
+     '<h4>④ n 个结点的完全二叉树高度</h4>'+
+     '<p><code>h = ⌊log₂n⌋ + 1</code></p>'+
+     '<h4>⑤ 完全二叉树的下标关系</h4>'+
+     '<p>结点 i 的左孩子 <code>2i</code>，右孩子 <code>2i+1</code>，双亲 <code>⌊i/2⌋</code>。</p>' },
+ { id:3, t:'顺序存储', c:'#7a4a8a', at:108,
+   b:'<h4>怎么存</h4>'+
+     '<p>用一维数组按<b>层序</b>存放，根放在 <code>[1]</code>（或 <code>[0]</code>），结点 <code>i</code> 的左孩子在 <code>2i</code>、右孩子在 <code>2i+1</code>、双亲在 <code>⌊i/2⌋</code>。</p>'+
+     '<h4>优点</h4>'+
+     '<p>不需要指针，节省空间；找双亲、找孩子都是下标运算，O(1)；可以随机访问。</p>'+
+     '<h4>缺点</h4>'+
+     '<p>只适合完全二叉树。一般二叉树会浪费大量空位：一棵高度为 h 的右斜树只有 h 个结点，却要占 <code>2^h − 1</code> 个位置。</p>'+
+     '<h4>空位怎么表示</h4>'+
+     '<p>用一个特殊值（如 <code>0</code> 或 <code>#</code>）标记空结点，遍历时必须跳过。</p>'+
+     '<p>正因为如此，一般的二叉树都用下面的二叉链表。</p>' },
+ { id:4, t:'二叉链表', c:'#2f6f9e', at:144,
+   b:'<h4>结构定义</h4>'+
+     '<pre>typedef struct BiTNode {\n    TElemType data;\n    struct BiTNode *lchild, *rchild;\n} BiTNode, *BiTree;</pre>'+
+     '<h4>指针账</h4>'+
+     '<p>n 个结点共有 <code>2n</code> 个指针域，其中 <code>n−1</code> 个指向孩子（除根外每个结点被一个指针指向），剩下 <code>n+1</code> 个是空指针。</p>'+
+     '<p>线索二叉树正是把这 <code>n+1</code> 个空指针利用起来，指向中序前驱/后继。</p>'+
+     '<h4>只能单向走</h4>'+
+     '<p>二叉链表只能<b>由父找子</b>，不能由子找父。想从某个结点回到它的祖先，只能靠<b>栈</b>把路径保存下来——这就是非递归遍历需要栈的根本原因。</p>'+
+     '<p>如果经常需要找双亲，可以用三叉链表，多一个 <code>*parent</code> 域。</p>' },
+ { id:5, t:'遍历的分类', c:'#3f7a52', at:180,
+   b:'<h4>遍历的定义</h4>'+
+     '<p>按某种次序访问二叉树中的每个结点，<b>每个结点恰好访问一次</b>。</p>'+
+     '<h4>四种次序</h4>'+
+     '<p><code>先序 DLR</code>　根 → 左 → 右<br>'+
+     '<code>中序 LDR</code>　左 → 根 → 右<br>'+
+     '<code>后序 LRD</code>　左 → 右 → 根<br>'+
+     '<code>层次</code>　一层一层，从左到右</p>'+
+     '<p>前三种看“根”排在第几位就能记住名字。</p>'+
+     '<h4>各自用在哪</h4>'+
+     '<p>先序：复制一棵树、输出表达式的前缀形式<br>'+
+     '中序：二叉排序树的中序序列是<b>升序</b><br>'+
+     '后序：释放所有结点、计算表达式的值<br>'+
+     '层次：按层统计、求树的宽度</p>'+
+     '<h4>由序列还原</h4>'+
+     '<p>先序 + 中序、后序 + 中序可以唯一确定一棵二叉树；<b>先序 + 后序不行</b>，因为分不清左右子树。</p>' },
+ { id:6, t:'递归遍历', c:'#8a6a24', at:216,
+   b:'<h4>三行代码</h4>'+
+     '<pre>void PreOrder(BiTree T){\n    if(T){\n        visit(T);              /* 先序：先访问根 */\n        PreOrder(T->lchild);\n        PreOrder(T->rchild);\n    }\n}</pre>'+
+     '<p>中序只是把 <code>visit</code> 挪到两次递归中间，后序挪到最后——<b>三种递归只差一行位置</b>。</p>'+
+     '<h4>“回来”靠什么</h4>'+
+     '<p>靠<b>系统调用栈</b>。每一层递归都会把返回地址、参数 T、局部变量压进栈；函数返回时再从栈里恢复。所以递归本质上是“系统帮你维护了一个栈”。</p>'+
+     '<h4>复杂度与风险</h4>'+
+     '<p>时间 <code>O(n)</code>（每个结点访问一次）；空间 <code>O(h)</code>，h 为树高。<br>'+
+     '斜树的 h = n，递归深度达到 n，结点数一多就会<b>爆栈</b>——这就是要学非递归的原因。</p>' },
+ { id:7, t:'非递归与栈', c:'#7a4a8a', at:252,
+   b:'<h4>先把递归改成栈</h4>'+
+     '<p>递归能做的事，显式栈都能做：把“待处理的结点”压栈，循环弹出。</p>'+
+     '<h4>先序（最简单）</h4>'+
+     '<pre>push(S,T);\nwhile(!empty(S)){\n  pop(S,p); visit(p);\n  if(p->rchild) push(S,p->rchild);\n  if(p->lchild)  push(S,p->lchild);\n}</pre>'+
+     '<p>注意入栈顺序：<b>右孩子先入、左孩子后入</b>，这样左孩子先出栈，才符合“根左右”。</p>'+
+     '<h4>后序（最难）</h4>'+
+     '<pre>while(p || !empty(S)){\n  while(p){ push(S,p); p=p->lchild; }\n  getTop(S,p);\n  if(p->rchild && p->rchild!=last) p=p->rchild;\n  else { visit(p); pop(S,p); last=p; p=NULL; }\n}</pre>'+
+     '<h4>为什么要 last</h4>'+
+     '<p>后序要求根在左右子树之后访问。从栈顶看到一个结点时，有两种情况：<br>'+
+     '① 它的右子树<b>还没做</b> → 转去右子树；<br>'+
+     '② 它的右子树<b>刚做完</b>（右孩子 == last）→ 现在可以访问它了。</p>'+
+     '<p>没有 <code>last</code> 就分不清这两种情况，会重复进入右子树造成<b>死循环</b>。</p>' },
+ { id:8, t:'层次与队列', c:'#2f6f9e', at:288,
+   b:'<h4>做法</h4>'+
+     '<pre>InitQueue(Q); EnQueue(Q,T);\nwhile(!QueueEmpty(Q)){\n  DeQueue(Q,p); visit(p);\n  if(p->lchild) EnQueue(Q,p->lchild);\n  if(p->rchild) EnQueue(Q,p->rchild);\n}</pre>'+
+     '<p>根入队，然后“出一个、进两个”，队列里始终按层排列。</p>'+
+     '<h4>为什么是队列</h4>'+
+     '<p>队列先进先出，保证<b>先被访问的结点的孩子，先被访问</b>——这正是“按层推进”。用栈会变成深度优先。</p>'+
+     '<h4>循环队列</h4>'+
+     '<p><code>rear = (rear+1) % MAXSIZE</code>，<code>front = (front+1) % MAXSIZE</code></p>'+
+     '<p>队空：<code>front == rear</code>；队满：<code>(rear+1) % MAXSIZE == front</code>（牺牲一个单元来区分空和满）。</p>'+
+     '<h4>用途</h4>'+
+     '<p>求树的宽度、按层打印、判断一棵树是否完全二叉树（遇到空结点后不该再有非空结点）。</p>' },
+ { id:9, t:'建树与还原', c:'#8a4a3a', at:324,
+   b:'<h4>按先序扩展序列建树</h4>'+
+     '<pre>void Create(BiTree *T, char *s, int *i){\n  char ch = s[(*i)++];\n  if(ch==\'#\') { *T=NULL; return; }\n  *T = new BiTNode; (*T)->data = ch;\n  Create(&(*T)->lchild, s, i);\n  Create(&(*T)->rchild, s, i);\n}</pre>'+
+     '<h4>易错点：游标</h4>'+
+     '<p>读指针必须<b>三个递归共用同一个</b>。所以要用 <code>*int</code> 或全局变量传递；如果写成普通的 <code>int i</code> 值传递，每次递归都是副本，读到的永远是第一个字符。</p>'+
+     '<p>例如 <code>ABD##E##CF###</code> 建出的树是 A(B(D,E), C(F,∅))。</p>'+
+     '<h4>由两种序列还原</h4>'+
+     '<p>先序的第一个字符是根；在中序里找到它，左边是左子树、右边是右子树；对左右区间递归即可。</p>'+
+     '<p>后序则从<b>最后一个</b>字符开始往前找根。</p>' }
+];
+var POS=[['定义与术语',0,2.42,'定义与术语'],
+ ['特殊二叉树',-1.5,2.42,'特殊二叉树'],['五个性质',1.5,2.42,'五个性质'],['二叉链表',-3.0,2.42,'二叉链表'],['顺序存储',3.0,2.42,'顺序存储'],
+ ['遍历的分类',0,1.62,'遍历的分类'],['递归遍历',-1.5,1.62,'递归遍历'],['非递归与栈',1.5,1.62,'非递归与栈'],['层次与队列',-3.0,1.62,'层次与队列'],['建树与还原',3.0,1.62,'建树与还原']];
 
-/* ================= 场景 ================= */
-var TREE_ORIGIN={x:0,y:1.62,z:-0.9}; var TREE_SCALE=0.62;
-var S={ tree:null, mode:'pre', ev:[], snap:[], idx:-1, playing:false, speed:620,
-        stereo:false, labels:true,
-        eye:{x:0,y:1.6,z:2.6}, yaw:0, pitch:-0.03,
-        drag:null, acc:0, lastT:0, cards:[], hoverCard:-1, hitCards:[] };
+var LINKS=[[0,1],[0,2],[0,4],[0,5],[1,3],[2,3],[4,5],[5,6],[5,8],[5,9],[6,7],[7,8]];
 
-function focalOf(){ return Math.min(cv.clientWidth||360, cv.clientHeight||640)*0.95; }
+/* 房间半径 7.2 × 5.2，卡片按角度分布在半径 3.1 的圆上 */
 
-/* ---- 3D 基础 ---- */
+K.forEach(function(k,i){
+  var p=POS[i];
+  k.x=p[1]; k.y=p[2]; k.z=-2.0;
+});
+
+/* ================= 状态 ================= */
+var S={ eye:{x:0,y:1.62,z:3.15}, yaw:0, pitch:-0.01, drag:null,
+        showLinks:true, stereo:false, sel:-1, hover:-1,
+        hit:[], panels:[] };
+
+function focalOf(){ return Math.min(cv.clientWidth||360, cv.clientHeight||640)*0.92; }
+
 function project(x,y,z,vp){
   var dx=x-vp.ex, dy=y-vp.ey, dz=z-vp.ez;
   var c=Math.cos(vp.yaw), s=Math.sin(vp.yaw);
@@ -146,327 +234,279 @@ function project(x,y,z,vp){
   return {x:vp.vw/2+Xc*f+vp.shiftX, y:vp.vh/2-Yc*f, f:f, d:d2};
 }
 
-/* ---- 教室几何 ---- */
-function buildRoom(){
-  var F=[];
+/* ================= 教室建模 ================= */
+var ROOM=[];
+(function buildRoom(){
+  var XL=-4.2, XR=4.2, ZB=-4.8, ZF=4.2, H=3.15;
   function quad(p,fill,opt){
     opt=opt||{};
-    // 法线明暗
     var ax=p[1][0]-p[0][0], ay=p[1][1]-p[0][1], az=p[1][2]-p[0][2];
     var bx=p[2][0]-p[0][0], by=p[2][1]-p[0][1], bz=p[2][2]-p[0][2];
     var nx=ay*bz-az*by, ny=az*bx-ax*bz, nz=ax*by-ay*bx;
-    var len=Math.sqrt(nx*nx+ny*ny+nz*nz)||1; nx/=len; ny/=len; nz/=len;
-    var L=[0.35,0.72,-0.6]; var ll=Math.sqrt(L[0]*L[0]+L[1]*L[1]+L[2]*L[2]);
-    var lam=Math.max(0,Math.abs((nx*L[0]+ny*L[1]+nz*L[2])/ll));
-    var shade=0.55+0.45*lam;
-    F.push({p:p, fill:fill, shade:shade, alpha:opt.alpha, line:opt.line});
+    var L=Math.sqrt(nx*nx+ny*ny+nz*nz)||1;
+    var lam=Math.abs((nx*0.30+ny*0.80+nz*-0.52)/L);
+    ROOM.push({p:p,fill:fill,shade:0.62+0.38*lam,alpha:opt.alpha,line:opt.line});
   }
-  var W=6, D=4.6, H=3.2;   // 半宽、半深、高
+  /* 地板：木地板条 */
+  var cols=6, rows=7;
+  for(var i=0;i<cols;i++) for(var j=0;j<rows;j++){
+    var x0=XL+2*(XR-XL)*i/(2*cols), x1=XL+2*(XR-XL)*(i+1)/(2*cols);
+    var z0=ZB+(ZF-ZB)*j/rows, z1=ZB+(ZF-ZB)*(j+1)/rows;
+    quad([[x0,0,z0],[x1,0,z0],[x1,0,z1],[x0,0,z1]],
+         (i+j)%2?'#4c3d2c':'#554434', {line:'#6a5540'});
+  }
+  /* 天花板 */
+  for(var i2=0;i2<3;i2++) for(var j2=0;j2<3;j2++){
+    var a0=XL+2*(XR-XL)*i2/(2*3), a1=XL+2*(XR-XL)*(i2+1)/(2*3);
+    var b0=ZB+(ZF-ZB)*j2/3, b1=ZB+(ZF-ZB)*(j2+1)/3;
+    quad([[a0,H,b0],[a1,H,b0],[a1,H,b1],[a0,H,b1]], '#2b3444');
+  }
+  /* 后墙（讲台侧）：下半墙裙 + 上半墙面 */
+  for(var i3=0;i3<4;i3++){
+    var c0=XL+2*(XR-XL)*i3/(2*4), c1=XL+2*(XR-XL)*(i3+1)/(2*4);
+    quad([[c0,0,ZB],[c1,0,ZB],[c1,0.95,ZB],[c0,0.95,ZB]], '#5d7187');
+    quad([[c0,0.95,ZB],[c1,0.95,ZB],[c1,H,ZB],[c0,H,ZB]], '#6a7f97');
+  }
+  /* 左右墙 */
+  for(var j3=0;j3<3;j3++){
+    var d0=ZB+(ZF-ZB)*j3/3, d1=ZB+(ZF-ZB)*(j3+1)/3;
+    quad([[XL,0,d0],[XL,0,d1],[XL,0.95,d1],[XL,0.95,d0]], '#525d70');
+    quad([[XL,0.95,d0],[XL,0.95,d1],[XL,H,d1],[XL,H,d0]], '#5f6d84');
+    quad([[XR,0,d0],[XR,0,d1],[XR,0.95,d1],[XR,0.95,d0]], '#525d70');
+    quad([[XR,0.95,d0],[XR,0.95,d1],[XR,H,d1],[XR,H,d0]], '#5f6d84');
+  }
+  /* 前墙（身后） */
+  quad([[XL,0,ZF],[XR,0,ZF],[XR,H,ZF],[XL,H,ZF]], '#48525f');
 
-  // 地板（瓷砖格）
-  var nx=4, nz=4;
-  for(var i=0;i<nx;i++) for(var j=0;j<nz;j++){
-    var x0=-W+2*W*i/nx, x1=-W+2*W*(i+1)/nx;
-    var z0=-D+2*D*j/nz, z1=-D+2*D*(j+1)/nz;
-    quad([[x0,0,z0],[x1,0,z0],[x1,0,z1],[x0,0,z1]], (i+j)%2?'#2c3242':'#313847', {line:'#3c4457'});
-  }
-  // 天花板
-  for(var i2=0;i2<2;i2++) for(var j2=0;j2<2;j2++){
-    var a0=-W+2*W*i2/2, a1=-W+2*W*(i2+1)/2;
-    var b0=-D+2*D*j2/2, b1=-D+2*D*(j2+1)/2;
-    quad([[a0,H,b0],[a1,H,b0],[a1,H,b1],[a0,H,b1]], '#232a36');
-  }
-  // 后墙（讲台侧 z=-D）
-  for(var i3=0;i3<3;i3++){
-    var c0=-W+2*W*i3/3, c1=-W+2*W*(i3+1)/3;
-    quad([[c0,0,-D],[c1,0,-D],[c1,H,-D],[c0,H,-D]], '#39435a');
-  }
-  // 左右墙
-  for(var j3=0;j3<2;j3++){
-    var d0=-D+2*D*j3/2, d1=-D+2*D*(j3+1)/2;
-    quad([[-W,0,d0],[-W,0,d1],[-W,H,d1],[-W,H,d0]], '#333c50');
-    quad([[W,0,d0],[W,0,d1],[W,H,d1],[W,H,d0]], '#333c50');
-  }
-  // 前墙（身后 z=D）
-  quad([[-W,0,D],[W,0,D],[W,H,D],[-W,H,D]], '#2f3644');
+  /* 黑板 + 边框 + 粉笔槽 */
+  quad([[-2.95,0.85,ZB+0.04],[2.95,0.85,ZB+0.04],[2.95,2.55,ZB+0.04],[-2.95,2.55,ZB+0.04]], '#1c3a2c', {line:'#5d8d74'});
+  quad([[-3.05,0.78,ZB+0.05],[3.05,0.78,ZB+0.05],[3.05,0.86,ZB+0.05],[-3.05,0.86,ZB+0.05]], '#8a9099');
+  quad([[-2.95,2.55,ZB+0.05],[2.95,2.55,ZB+0.05],[2.95,2.62,ZB+0.05],[-2.95,2.62,ZB+0.05]], '#6d747d');
 
-  // 黑板
-  quad([[-3.4,0.9,-D+0.02],[3.4,0.9,-D+0.02],[3.4,2.5,-D+0.02],[-3.4,2.5,-D+0.02]], '#1e3a2e', {line:'#2d5a47'});
-  // 讲台
-  quad([[-1.6,0,-D+0.9],[1.6,0,-D+0.9],[1.6,0.55,-D+0.9],[-1.6,0.55,-D+0.9]], '#4a4034');
-  quad([[-1.6,0.55,-D+0.9],[1.6,0.55,-D+0.9],[1.6,0.55,-D+1.5],[-1.6,0.55,-D+1.5]], '#5a4e3f');
+  /* 讲台 + 讲桌 */
+  quad([[-2.2,0,ZB+0.55],[2.2,0,ZB+0.55],[2.2,0.18,ZB+0.55],[-2.2,0.18,ZB+0.55]], '#6b5a44');
+  quad([[-2.2,0.18,ZB+0.55],[2.2,0.18,ZB+0.55],[2.2,0.18,ZB+1.15],[-2.2,0.18,ZB+1.15]], '#7d6a50');
+  quad([[-2.2,0,ZB+1.15],[2.2,0,ZB+1.15],[2.2,0.18,ZB+1.15],[-2.2,0.18,ZB+1.15]], '#5c4d3a');
 
-  // 课桌 3 排 × 2 列
-  var desks=[[-2.6,1.2],[2.6,1.2],[-2.6,0.1],[2.6,0.1],[-2.6,-1.0],[2.6,-1.0]];
-  desks.forEach(function(d){
-    var cx=d[0], cz=d[1], w=1.1, dp=0.62, hh=0.74;
-    // 桌面
-    quad([[cx-w/2,hh,cz-dp/2],[cx+w/2,hh,cz-dp/2],[cx+w/2,hh,cz+dp/2],[cx-w/2,hh,cz+dp/2]], '#6a5a44');
-    // 四条边
-    quad([[cx-w/2,0,cz-dp/2],[cx+w/2,0,cz-dp/2],[cx+w/2,hh,cz-dp/2],[cx-w/2,hh,cz-dp/2]], '#4e4436');
-    quad([[cx+w/2,0,cz+dp/2],[cx-w/2,0,cz+dp/2],[cx-w/2,hh,cz+dp/2],[cx+w/2,hh,cz+dp/2]], '#463d31');
-    quad([[cx+w/2,0,cz-dp/2],[cx+w/2,0,cz+dp/2],[cx+w/2,hh,cz+dp/2],[cx+w/2,hh,cz-dp/2]], '#423a2f');
-    // 椅子
-    quad([[cx-w/2+0.2,0.45,cz+0.55],[cx+w/2-0.2,0.45,cz+0.55],[cx+w/2-0.2,0.45,cz+0.95],[cx-w/2+0.2,0.45,cz+0.95]], '#3c4658');
-    quad([[cx-w/2+0.2,0.45,cz+0.95],[cx+w/2-0.2,0.45,cz+0.95],[cx+w/2-0.2,0.9,cz+0.95],[cx-w/2+0.2,0.9,cz+0.95]], '#333c4c');
+  /* 课桌：3 列 × 3 排 */
+  var xs=[-2.55,0,2.55], zs=[-2.55,-1.45,-0.35];
+  zs.forEach(function(cz){
+    xs.forEach(function(cx){
+      var w=1.25, dp=0.62, hh=0.76;
+      quad([[cx-w/2,hh,cz-dp/2],[cx+w/2,hh,cz-dp/2],[cx+w/2,hh,cz+dp/2],[cx-w/2,hh,cz+dp/2]], '#8a7355');
+      quad([[cx-w/2,hh-0.06,cz-dp/2],[cx+w/2,hh-0.06,cz-dp/2],[cx+w/2,hh-0.06,cz+dp/2],[cx-w/2,hh-0.06,cz+dp/2]], '#5a4b39');
+      quad([[cx-w/2,0,cz-dp/2],[cx+w/2,0,cz-dp/2],[cx+w/2,hh-0.06,cz-dp/2],[cx-w/2,hh-0.06,cz-dp/2]], '#564836');
+      quad([[cx+w/2,0,cz+dp/2],[cx-w/2,0,cz+dp/2],[cx-w/2,hh-0.06,cz+dp/2],[cx+w/2,hh-0.06,cz+dp/2]], '#4b3f30');
+      quad([[cx+w/2,0,cz-dp/2],[cx+w/2,0,cz+dp/2],[cx+w/2,hh-0.06,cz+dp/2],[cx+w/2,hh-0.06,cz-dp/2]], '#463a2c');
+      /* 椅子 */
+      var chz=cz+0.62;
+      quad([[cx-w/3,0.45,chz],[cx+w/3,0.45,chz],[cx+w/3,0.45,chz+0.44],[cx-w/3,0.45,chz+0.44]], '#41506a');
+      quad([[cx-w/3,0.45,chz+0.44],[cx+w/3,0.45,chz+0.44],[cx+w/3,0.95,chz+0.44],[cx-w/3,0.95,chz+0.44]], '#39465c');
+      quad([[cx-w/3,0,chz],[cx-w/3,0,chz+0.44],[cx-w/3,0.45,chz+0.44],[cx-w/3,0.45,chz]], '#323d4f');
+      quad([[cx+w/3,0,chz],[cx+w/3,0,chz+0.44],[cx+w/3,0.45,chz+0.44],[cx+w/3,0.45,chz]], '#323d4f');
+    });
   });
 
-  // 左墙窗户（发光）
-  for(var k=0;k<3;k++){
-    var zz=-2.6+k*1.9;
-    quad([[-W+0.03,1.25,zz],[-W+0.03,1.25,zz+1.35],[-W+0.03,2.7,zz+1.35],[-W+0.03,2.7,zz]], '#8fc6e8', {alpha:0.9,line:'#cfe9f8'});
+  /* 左墙 3 扇窗 + 地面光斑 */
+  for(var k2=0;k2<3;k2++){
+    var zz=-3.0+k2*2.3;
+    quad([[XL+0.04,1.15,zz],[XL+0.04,1.15,zz+1.7],[XL+0.04,2.6,zz+1.7],[XL+0.04,2.6,zz]], '#9fd2f2', {alpha:0.95,line:'#d9efff'});
+    quad([[XL+0.05,1.86,zz],[XL+0.05,1.92,zz+1.7],[XL+0.05,1.92,zz+1.7],[XL+0.05,1.86,zz]], '#ffffff', {alpha:0.25});
+    quad([[XL+0.05,1.86,zz],[XL+0.05,1.86,zz+1.7],[XL+0.05,1.92,zz+1.7],[XL+0.05,1.92,zz]], '#cfe9f8', {alpha:0.45});
+    quad([[XL+0.05,1.15,zz+0.82],[XL+0.05,1.15,zz+0.88],[XL+0.05,2.6,zz+0.88],[XL+0.05,2.6,zz+0.82]], '#cfe9f8', {alpha:0.45});
+    quad([[XL+0.2,0.014,zz-0.2],[-0.8,0.014,zz+0.9],[-0.4,0.014,zz+0.1],[XL+0.2,0.014,zz-0.9]], '#a9d8f5', {alpha:0.10});
   }
-  // 顶部灯板
-  for(var m=0;m<4;m++){
-    var lx=(m%2?1.7:-1.7), lz=(m<2?1.6:-1.4);
-    quad([[lx-0.55,H-0.02,lz-0.26],[lx+0.55,H-0.02,lz-0.26],[lx+0.55,H-0.02,lz+0.26],[lx-0.55,H-0.02,lz+0.26]], '#cfe2ff', {alpha:0.5});
-  }
-  return F;
-}
-var ROOM=buildRoom();
+  /* 顶灯 6 块 */
+  [[-2.6,-2.6],[0,-2.6],[2.6,-2.6],[-2.6,0.9],[0,0.9],[2.6,0.9]].forEach(function(l){
+    quad([[l[0]-0.6,H-0.03,l[1]-0.3],[l[0]+0.6,H-0.03,l[1]-0.3],[l[0]+0.6,H-0.03,l[1]+0.3],[l[0]-0.6,H-0.03,l[1]+0.3]], '#e6f1ff', {alpha:0.8});
+  });
+  /* 后门 */
+  quad([[XR-0.04,0,2.4],[XR-0.04,0,3.5],[XR-0.04,2.1,3.5],[XR-0.04,2.1,2.4]], '#6a5236', {alpha:0.95});
+})();
 
-/* ---- 知识卡片 ---- */
-S.cards=[
-  { x:-4.4, y:1.95, z:-0.8, w:2.0, h:1.15, c:'#2b5d8a', title:'二叉链表存储',
-    body:'<p>每个结点三个域：<code>data</code>、<code>*lchild</code>、<code>*rchild</code>。</p>'+
-         '<p>左孩子指针指向左子树根，右孩子指针指向右子树根；没有孩子时置为 <code>NULL</code>，建树时用 <code>#</code> 表示空指针。</p>'+
-         '<p>二叉链表只能从父到子，想找父结点需要额外保存路径（栈就是干这个的）。</p>' },
-  { x:4.4, y:1.95, z:-0.8, w:2.0, h:1.15, c:'#2f6b4a', title:'四种遍历',
-    body:'<p><code>先序</code> 根 → 左 → 右　（DLR）</p>'+
-         '<p><code>中序</code> 左 → 根 → 右　（LDR）</p>'+
-         '<p><code>后序</code> 左 → 右 → 根　（LRD）</p>'+
-         '<p><code>层次</code> 一层一层从左到右（靠队列）</p>'+
-         '<p>递归写法三行代码，非递归写法靠显式栈保存“回来的路”。</p>' },
-  { x:-4.4, y:1.95, z:1.4, w:2.0, h:1.15, c:'#6b3f7a', title:'栈与队列',
-    body:'<p><code>栈</code> 后进先出：非递归遍历用它保存祖先结点，后序还要用 <code>last</code> 记录上一个访问的结点，判断右子树是否已访问。</p>'+
-         '<p><code>队列</code> 先进先出：层次遍历时，出队的结点把左右孩子依次入队，天然保证“按层推进”。</p>' },
-  { x:4.4, y:1.95, z:1.4, w:2.0, h:1.15, c:'#8a6220', title:'二叉树的五个性质',
-    body:'<p>① 第 <code>i</code> 层最多 <code>2^(i-1)</code> 个结点。</p>'+
-         '<p>② 高为 <code>h</code> 的二叉树最多 <code>2^h − 1</code> 个结点（满二叉树）。</p>'+
-         '<p>③ 叶子数 <code>n0</code> 与度为 2 的结点数 <code>n2</code> 满足 <code>n0 = n2 + 1</code>。</p>'+
-         '<p>④ <code>n</code> 个结点的完全二叉树高度为 <code>⌊log₂n⌋ + 1</code>。</p>'+
-         '<p>⑤ 顺序存储适合完全二叉树，一般二叉树用二叉链表。</p>' },
-  { x:0, y:2.75, z:-4.3, w:2.6, h:1.1, c:'#7a3b3b', title:'按先序序列建树',
-    body:'<p>读入一个字符：是 <code>#</code> 就返回空；否则新建结点，递归建左子树、再建右子树。</p>'+
-         '<p>游标必须用 <code>*int</code> 或全局变量传递，保证三个递归调用共享同一个读指针——这是建树最容易错的地方。</p>' }
-];
-
-/* ---- 状态 ---- */
-function setTree(seq){
-  S.tree=parseTree(seq);
-  S.ev=trace(S.tree,S.mode); S.snap=snapshots(S.ev); S.idx=-1; S.playing=false;
-  document.getElementById('play').textContent='▶ 播放';
-  apply();
-}
-function apply(){
-  var s=S.snap[Math.max(0,Math.min(S.idx+1,S.snap.length-1))];
-  S.vis=s.visited;
-  document.getElementById('stack').innerHTML=(s.stack||[]).map(function(n){return '<span class="chip">'+S.tree.nodes[n].ch+'</span>';}).join('')||'<span style="color:#3c4b63">空</span>';
-  document.getElementById('visited').innerHTML=(s.visited||[]).map(function(n){return '<span class="chip v">'+S.tree.nodes[n].ch+'</span>';}).join('')||'<span style="color:#3c4b63">空</span>';
-}
-
-/* ---- 绘制 ---- */
 function shade(hex,f){
-  var r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
-  r=Math.min(255,Math.round(r*f)); g=Math.min(255,Math.round(g*f)); b=Math.min(255,Math.round(b*f));
-  return 'rgb('+r+','+g+','+b+')';
+  var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return 'rgb('+Math.min(255,Math.round(r*f))+','+Math.min(255,Math.round(g*f))+','+Math.min(255,Math.round(b*f))+')';
 }
 function drawRoom(vp){
   var list=[];
   for(var i=0;i<ROOM.length;i++){
-    var f=ROOM[i], ps=[], ok=true, dsum=0;
+    var f=ROOM[i], ps=[], ok=true, ds=0;
     for(var k=0;k<4;k++){
       var p=project(f.p[k][0],f.p[k][1],f.p[k][2],vp);
       if(!p){ ok=false; break; }
-      ps.push(p); dsum+=p.d;
+      ps.push(p); ds+=p.d;
     }
-    if(ok) list.push({ps:ps, d:dsum/4, f:f});
+    if(ok) list.push({ps:ps,d:ds/4,f:f});
   }
   list.sort(function(a,b){ return b.d-a.d; });
   for(var j=0;j<list.length;j++){
-    var it=list[j], f2=it.f;
-    ctx.beginPath();
-    ctx.moveTo(it.ps[0].x,it.ps[0].y);
+    var it=list[j];
+    ctx.beginPath(); ctx.moveTo(it.ps[0].x,it.ps[0].y);
     for(var q=1;q<4;q++) ctx.lineTo(it.ps[q].x,it.ps[q].y);
     ctx.closePath();
-    ctx.globalAlpha=f2.alpha||1;
-    ctx.fillStyle=shade(f2.fill,f2.shade);
-    ctx.fill();
-    if(f2.line){ ctx.globalAlpha=0.35; ctx.strokeStyle=f2.line; ctx.lineWidth=1; ctx.stroke(); }
+    ctx.globalAlpha=it.f.alpha||1;
+    ctx.fillStyle=shade(it.f.fill,it.f.shade); ctx.fill();
+    if(it.f.line){ ctx.globalAlpha=0.3; ctx.strokeStyle=it.f.line; ctx.lineWidth=1; ctx.stroke(); }
     ctx.globalAlpha=1;
   }
 }
 
-function drawTree(vp){
-  var T=S.tree, N=T.nodes;
-  // 顶灯光束（半透明光锥）
-  (function(){
-    var q=[[-1.15,3.16,-0.9],[1.15,3.16,-0.9],[2.3,0.02,-0.9],[-2.3,0.02,-0.9]];
-    var ps=q.map(function(p){ return project(p[0],p[1],p[2],vp); });
-    if(ps.some(function(p){return !p;})) return;
-    var g=ctx.createLinearGradient(ps[0].x,ps[0].y,ps[2].x,ps[2].y);
-    g.addColorStop(0,'rgba(200,230,255,.16)');
-    g.addColorStop(1,'rgba(200,230,255,0)');
-    ctx.beginPath(); ctx.moveTo(ps[0].x,ps[0].y);
-    for(var i=1;i<4;i++) ctx.lineTo(ps[i].x,ps[i].y);
-    ctx.closePath(); ctx.fillStyle=g; ctx.fill();
-  })();
-  var visited={}; S.vis.forEach(function(n){visited[n]=1;});
-  var ox=TREE_ORIGIN.x, oy=TREE_ORIGIN.y, oz=TREE_ORIGIN.z;
-
-  // 访问轨迹光带
-  var pts=[];
-  for(var i=0;i<S.vis.length;i++){ var n=N[S.vis[i]]; var p=project(ox+n.px*TREE_SCALE, oy+n.py*TREE_SCALE, oz+n.pz*TREE_SCALE, vp); if(p) pts.push(p); }
-  if(pts.length>1){
-    ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
-    for(var k=1;k<pts.length;k++) ctx.lineTo(pts[k].x,pts[k].y);
-    ctx.strokeStyle='rgba(90,220,255,.28)'; ctx.lineWidth=2; ctx.stroke();
-  }
-
-  // 边
-  N.forEach(function(n){
-    [n.l,n.r].forEach(function(c){
-      if(c<0) return;
-      var a=project(ox+n.px*TREE_SCALE,oy+n.py*TREE_SCALE,oz+n.pz*TREE_SCALE,vp), b=project(ox+N[c].px*TREE_SCALE,oy+N[c].py*TREE_SCALE,oz+N[c].pz*TREE_SCALE,vp);
-      if(!a||!b) return;
-      var act=visited[n.id]&&visited[c];
-      ctx.strokeStyle=act?'rgba(90,230,170,.85)':'rgba(140,190,255,.35)';
-      ctx.lineWidth=act?3:1.6;
-      ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
-    });
+/* ================= 关联线 + 卡片 ================= */
+function drawChalk(vp){
+  var p=project(0,2.15,-4.74,vp);
+  if(!p) return;
+  var f=p.f;
+  ctx.save();
+  ctx.globalAlpha=0.85;
+  ctx.fillStyle='rgba(226,240,232,.92)';
+  ctx.textAlign='center';
+  ctx.font='bold '+Math.round(0.16*f)+'px "Microsoft YaHei",sans-serif';
+  ctx.fillText('二叉树的遍历', p.x, p.y);
+  ctx.font=Math.round(0.085*f)+'px "Microsoft YaHei",sans-serif';
+  ctx.globalAlpha=0.62;
+  ctx.fillStyle='rgba(200,225,210,.9)';
+  ctx.fillText('先序 DLR　中序 LDR　后序 LRD　层次', p.x, p.y+0.24*f);
+  ctx.restore();
+}
+function drawLinks(vp){
+  if(!S.showLinks) return;
+  LINKS.forEach(function(L){
+    var a=K[L[0]], b=K[L[1]];
+    var pa=project(a.x,a.y,a.z,vp), pb=project(b.x,b.y,b.z,vp);
+    if(!pa||!pb) return;
+    var act = (S.sel===a.id||S.sel===b.id||S.hover===a.id||S.hover===b.id);
+    ctx.strokeStyle=act?'rgba(140,230,255,.95)':'rgba(120,180,235,.45)';
+    ctx.lineWidth=act?3:1.6;
+    if(act){ ctx.shadowColor='rgba(120,220,255,.8)'; ctx.shadowBlur=12; }
+    ctx.beginPath(); ctx.moveTo(pa.x,pa.y); ctx.lineTo(pb.x,pb.y); ctx.stroke();
+    ctx.shadowBlur=0;
   });
+}
+function drawCards(vp){
+  S.hit=[];
+  var arr=K.map(function(k){ var p=project(k.x,k.y,k.z,vp); return p?{k:k,p:p}:null; })
+           .filter(Boolean).sort(function(a,b){ return b.p.d-a.p.d; });
+  arr.forEach(function(o){
+    var k=o.k,p=o.p;
+    var w=Math.max(74,Math.min(230,0.95*p.f)), h=w*0.56;
+    var x=p.x-w/2, y=p.y-h/2;
+    var sel=(S.sel===k.id), hov=(S.hover===k.id);
+    S.hit.push({x:x,y:y,w:w,h:h,k:k});
 
-  // 结点
-  var l2=N.map(function(n){ var p=project(ox+n.px*TREE_SCALE,oy+n.py*TREE_SCALE,oz+n.pz*TREE_SCALE,vp); return p?{n:n,p:p}:null; })
-            .filter(Boolean).sort(function(a,b){ return b.p.d-a.p.d; });
-  l2.forEach(function(o){
-    var n=o.n,p=o.p, r=Math.max(8,Math.min(46,0.2*p.f));
-    var cur=(S.vis.length&&S.vis[S.vis.length-1]===n.id), vis=visited[n.id];
-    ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2);
-    var rg=ctx.createRadialGradient(p.x-r*.3,p.y-r*.35,r*.1,p.x,p.y,r);
-    if(cur){ rg.addColorStop(0,'#fff6d0'); rg.addColorStop(.55,'#ffd166'); rg.addColorStop(1,'#c98a10'); }
-    else if(vis){ rg.addColorStop(0,'#c4ffe0'); rg.addColorStop(.6,'#54dd9b'); rg.addColorStop(1,'#1c7d52'); }
-    else { rg.addColorStop(0,'#93a9c9'); rg.addColorStop(1,'#33425c'); }
-    ctx.fillStyle=rg; ctx.fill();
-    if(cur){ ctx.shadowColor='rgba(255,210,90,.9)'; ctx.shadowBlur=24; ctx.strokeStyle='rgba(255,230,150,.9)'; ctx.lineWidth=2; ctx.stroke(); ctx.shadowBlur=0; }
-    ctx.fillStyle=cur?'#3a2600':(vis?'#03251a':'#dfe9f7');
-    ctx.font='bold '+Math.round(r*0.95)+'px Consolas';
+    ctx.globalAlpha=sel?1:Math.max(0.55,Math.min(1,2.4-p.d*0.12));
+    ctx.beginPath();
+    if(ctx.roundRect) ctx.roundRect(x,y,w,h,9); else ctx.rect(x,y,w,h);
+    var g=ctx.createLinearGradient(x,y,x,y+h);
+    g.addColorStop(0,k.c); g.addColorStop(0.55,'#16222f'); g.addColorStop(1,'#0e1621');
+    ctx.fillStyle=g;
+    if(sel||hov){ ctx.shadowColor=k.c; ctx.shadowBlur=sel?26:16; }
+    ctx.fill(); ctx.shadowBlur=0;
+    ctx.strokeStyle=sel?'rgba(180,230,255,.95)':'rgba(140,185,235,.42)';
+    ctx.lineWidth=sel?2:1; ctx.stroke();
+
+    // 顶部色条
+    ctx.beginPath();
+    if(ctx.roundRect) ctx.roundRect(x,y,w,4,2); else ctx.rect(x,y,w,4);
+    ctx.fillStyle='rgba(255,255,255,.55)'; ctx.fill();
+
+    ctx.fillStyle='#eaf4ff';
+    ctx.font='bold '+Math.max(10,Math.round(w*0.1))+'px "Microsoft YaHei",sans-serif';
     ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(n.ch,p.x,p.y+1);
-    if(cur){
-      var ph=(Date.now()%900)/900;
-      ctx.beginPath(); ctx.arc(p.x,p.y,r+ph*34,0,Math.PI*2);
-      ctx.strokeStyle='rgba(255,214,102,'+(0.55*(1-ph))+')'; ctx.lineWidth=2.5; ctx.stroke();
-    }
+    ctx.fillText(k.t, x+w/2, y+h*0.44);
+    ctx.fillStyle='rgba(170,205,235,.65)';
+    ctx.font=Math.max(8,Math.round(w*0.055))+'px "Microsoft YaHei",sans-serif';
+    ctx.fillText('点击展开', x+w/2, y+h*0.74);
+    ctx.globalAlpha=1;
   });
   ctx.textBaseline='alphabetic';
-
-  // 当前步提示
-  if(S.vis.length){
-    var total=S.snap.length-1, curId=S.vis[S.vis.length-1];
-    var an=project(ox, oy+(T.maxD*0.5+0.75)*SP*TREE_SCALE, oz, vp);
-    if(an){
-      var txt='第 '+(S.idx+1)+' / '+total+' 步　·　访问 '+N[curId].ch;
-      ctx.font='13px "Microsoft YaHei",sans-serif';
-      ctx.textAlign='center';
-      var tw=ctx.measureText(txt).width+20;
-      ctx.fillStyle='rgba(9,17,28,.78)';
-      ctx.beginPath();
-      if(ctx.roundRect) ctx.roundRect(an.x-tw/2, an.y-15, tw, 26, 13); else ctx.rect(an.x-tw/2, an.y-15, tw, 26);
-      ctx.fill();
-      ctx.strokeStyle='rgba(90,190,255,.35)'; ctx.lineWidth=1; ctx.stroke();
-      ctx.fillStyle='#9fe0ff';
-      ctx.fillText(txt, an.x, an.y+3);
-      ctx.textAlign='left';
-    }
-  }
 }
 
-function drawCards(vp){
-  S.hitCards=[];
-  if(!S.labels) return;
-  var arr=S.cards.map(function(c){
-    var p=project(c.x,c.y,c.z,vp);
-    return p?{c:c,p:p}:null;
-  }).filter(Boolean).sort(function(a,b){ return b.p.d-a.p.d; });
-  arr.forEach(function(o){
-    var c=o.c,p=o.p;
-    var w=Math.max(80,Math.min(380,c.w*p.f*0.85)), h=w*c.h/c.w;
-    var x=p.x-w/2, y=p.y-h/2;
-    S.hitCards.push({x:x,y:y,w:w,h:h,c:c});
-    var alpha=Math.max(0.35,Math.min(1, 2.6-p.d*0.16));
-    ctx.globalAlpha=alpha;
-    // 卡片
-    ctx.beginPath();
-    if(ctx.roundRect) ctx.roundRect(x,y,w,h,10); else ctx.rect(x,y,w,h);
-    var g=ctx.createLinearGradient(x,y,x,y+h);
-    g.addColorStop(0,c.c); g.addColorStop(1,'#101a26');
-    ctx.fillStyle=g; ctx.globalAlpha=alpha*0.92; ctx.fill();
-    ctx.globalAlpha=alpha;
-    ctx.strokeStyle='rgba(160,205,255,.55)'; ctx.lineWidth=1.2; ctx.stroke();
-    // 标题
-    ctx.fillStyle='#eaf3ff';
-    ctx.font='bold '+Math.max(9,Math.round(w*0.082))+'px "Microsoft YaHei",sans-serif';
-    ctx.textAlign='center';
-    ctx.fillText(c.title, x+w/2, y+h*0.42);
-    // 小字提示
-    ctx.fillStyle='rgba(200,225,255,.7)';
-    ctx.font=Math.max(8,Math.round(w*0.055))+'px "Microsoft YaHei",sans-serif';
-    ctx.fillText('点击查看', x+w/2, y+h*0.68);
-    ctx.globalAlpha=1;
+/* 罗盘：显示四周知识点方位 */
+var cm=document.getElementById('compass'), cctx=cm.getContext('2d');
+function drawCompass(){
+  var W=cm.width,H=cm.height;
+  cctx.clearRect(0,0,W,H);
+  var cx=W/2, cy=H-24, R=58;
+  cctx.save();
+  cctx.globalAlpha=0.9;
+  cctx.beginPath(); cctx.arc(cx,cy,R,Math.PI,0); cctx.strokeStyle='rgba(90,130,175,.35)'; cctx.lineWidth=1; cctx.stroke();
+  K.forEach(function(k){
+    var ang=Math.atan2(k.x-S.eye.x, -(k.z-S.eye.z));   // 相对正前方
+    var rel=ang-S.yaw;
+    if(Math.abs(rel)>Math.PI*0.92) return;
+    var px=cx+Math.sin(rel)*R*0.92, py=cy-Math.cos(rel)*R*0.92;
+    cctx.beginPath(); cctx.arc(px,py,S.sel===k.id?4:2.6,0,Math.PI*2);
+    cctx.fillStyle=S.sel===k.id?'#ffd479':k.c; cctx.fill();
   });
-  ctx.globalAlpha=1;
+  cctx.beginPath(); cctx.moveTo(cx-5,cy+4); cctx.lineTo(cx+5,cy+4); cctx.lineTo(cx,cy-4);
+  cctx.closePath(); cctx.fillStyle='#8fd3ff'; cctx.fill();
+  cctx.restore();
 }
 
+/* ================= 渲染 ================= */
 function vp(full,shiftX){
-  var W=cv.clientWidth||360, H=cv.clientHeight||640;
-  return {vw:full?W:W/2, vh:H, ex:S.eye.x, ey:S.eye.y, ez:S.eye.z,
-          yaw:S.yaw, pitch:S.pitch, focal:focalOf(), shiftX:shiftX||0};
+  var W=cv.clientWidth||360,H=cv.clientHeight||640;
+  return {vw:full?W:W/2,vh:H,ex:S.eye.x,ey:S.eye.y,ez:S.eye.z,yaw:S.yaw,pitch:S.pitch,
+          focal:focalOf(),shiftX:shiftX||0};
 }
 function render(){
-  var W=cv.clientWidth||360, H=cv.clientHeight||640;
+  var W=cv.clientWidth||360,H=cv.clientHeight||640;
   ctx.setTransform(DPR,0,0,DPR,0,0);
   var bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#080d16'); bg.addColorStop(1,'#05070c');
+  bg.addColorStop(0,'#070c14'); bg.addColorStop(1,'#04060a');
   ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
 
   if(!S.stereo){
     var v=vp(true,0);
-    drawRoom(v); drawTree(v); drawCards(v);
+    drawRoom(v); drawChalk(v); drawLinks(v); drawCards(v);
   } else {
     var e0=0.045;
     [{ox:0,off:-e0},{ox:W/2,off:e0}].forEach(function(e){
       ctx.save(); ctx.beginPath(); ctx.rect(e.ox,0,W/2,H); ctx.clip(); ctx.translate(e.ox,0);
       var v2=vp(false,0); v2.ex+=Math.cos(S.yaw)*e.off; v2.ez+=-Math.sin(S.yaw)*e.off;
-      drawRoom(v2); drawTree(v2);
+      drawRoom(v2); drawChalk(v2); drawLinks(v2);
       ctx.restore();
     });
     ctx.setTransform(DPR,0,0,DPR,0,0);
     ctx.strokeStyle='rgba(0,0,0,.85)'; ctx.beginPath(); ctx.moveTo(W/2,0); ctx.lineTo(W/2,H); ctx.stroke();
   }
+  drawCompass();
 }
 
-/* ---- 交互 ---- */
+/* ================= 面板 ================= */
 function toast(t){ var el=document.getElementById('toast'); el.textContent=t; el.classList.add('show');
-  clearTimeout(el._t); el._t=setTimeout(function(){el.classList.remove('show');},1600); }
-function openCard(c){
-  document.getElementById('cardT').textContent=c.title;
-  document.getElementById('cardB').innerHTML=c.body;
-  document.getElementById('card').classList.add('on');
+  clearTimeout(el._t); el._t=setTimeout(function(){el.classList.remove('show');},1500); }
+
+function openK(k){
+  S.sel=k.id;
+  document.getElementById('pK').textContent='知识点 '+String.fromCharCode(65+k.id);
+  document.getElementById('pT').textContent=k.t;
+  var rel=LINKS.filter(function(L){ return L[0]===k.id||L[1]===k.id; })
+               .map(function(L){ return L[0]===k.id?L[1]:L[0]; });
+  var uniq=[]; rel.forEach(function(r){ if(uniq.indexOf(r)<0) uniq.push(r); });
+  var links='<div id="links"><div style="color:#5d7d9c;font-size:11px;margin-bottom:6px">关联知识点</div>'+
+    uniq.map(function(r){ return '<span class="l" data-id="'+r+'">'+K[r].t+'</span>'; }).join('')+'</div>';
+  document.getElementById('panelBody').innerHTML=k.b+links;
+  document.getElementById('panel').classList.add('on');
+  Array.prototype.forEach.call(document.querySelectorAll('#links .l'),function(el){
+    el.addEventListener('click',function(){ openK(K[+el.getAttribute('data-id')]); });
+  });
 }
-document.getElementById('cardX').addEventListener('click',function(){
-  document.getElementById('card').classList.remove('on');
+document.getElementById('pX').addEventListener('click',function(){
+  document.getElementById('panel').classList.remove('on'); S.sel=-1;
 });
 
+/* ================= 交互 ================= */
 cv.addEventListener('mousedown',function(e){ S.drag={x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY}; });
 window.addEventListener('mouseup',function(e){
   if(S.drag){
     var moved=Math.abs(e.clientX-S.drag.sx)+Math.abs(e.clientY-S.drag.sy);
     if(moved<5){
       var r=cv.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
-      for(var i=S.hitCards.length-1;i>=0;i--){
-        var h=S.hitCards[i];
-        if(mx>=h.x&&mx<=h.x+h.w&&my>=h.y&&my<=h.y+h.h){ openCard(h.c); return; }
+      for(var i=S.hit.length-1;i>=0;i--){
+        var h=S.hit[i];
+        if(mx>=h.x&&mx<=h.x+h.w&&my>=h.y&&my<=h.y+h.h){ openK(h.k); break; }
       }
     }
   }
@@ -475,15 +515,23 @@ window.addEventListener('mouseup',function(e){
 window.addEventListener('mousemove',function(e){
   if(S.drag){
     S.yaw+=(e.clientX-S.drag.x)*0.004;
-    S.pitch=Math.max(-1.1,Math.min(1.1,S.pitch+(e.clientY-S.drag.y)*0.003));
+    S.pitch=Math.max(-1.0,Math.min(1.0,S.pitch+(e.clientY-S.drag.y)*0.003));
     S.drag.x=e.clientX; S.drag.y=e.clientY;
     document.getElementById('hint').style.opacity=0;
+  } else {
+    var r=cv.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
+    S.hover=-1;
+    for(var i=S.hit.length-1;i>=0;i--){
+      var h=S.hit[i];
+      if(mx>=h.x&&mx<=h.x+h.w&&my>=h.y&&my<=h.y+h.h){ S.hover=h.k.id; break; }
+    }
   }
 });
 cv.addEventListener('wheel',function(e){ e.preventDefault();
-  var dx=Math.sin(S.yaw), dz=Math.cos(S.yaw);
-  S.eye.x+=dx*e.deltaY*0.002; S.eye.z-=dz*e.deltaY*0.002;
-  S.eye.x=Math.max(-5,Math.min(5,S.eye.x)); S.eye.z=Math.max(-3.6,Math.min(4,S.eye.z));
+  S.eye.x+=Math.sin(S.yaw)*e.deltaY*0.0016;
+  S.eye.z-=Math.cos(S.yaw)*e.deltaY*0.0016;
+  S.eye.x=Math.max(-5,Math.min(5,S.eye.x));
+  S.eye.z=Math.max(-3.4,Math.min(3.4,S.eye.z));
 },{passive:false});
 
 var touchStart=null;
@@ -493,7 +541,7 @@ cv.addEventListener('touchstart',function(e){
 cv.addEventListener('touchmove',function(e){
   if(touchStart&&e.touches.length===1){ var t=e.touches[0];
     S.yaw+=(t.clientX-touchStart.x)*0.005;
-    S.pitch=Math.max(-1.1,Math.min(1.1,S.pitch+(t.clientY-touchStart.y)*0.004));
+    S.pitch=Math.max(-1.0,Math.min(1.0,S.pitch+(t.clientY-touchStart.y)*0.004));
     touchStart.x=t.clientX; touchStart.y=t.clientY;
     document.getElementById('hint').style.opacity=0; }
 },{passive:true});
@@ -502,30 +550,22 @@ cv.addEventListener('touchend',function(e){
     var t=e.changedTouches[0];
     if(t && Math.abs(t.clientX-touchStart.sx)+Math.abs(t.clientY-touchStart.sy)<8){
       var r=cv.getBoundingClientRect(), mx=t.clientX-r.left, my=t.clientY-r.top;
-      for(var i=S.hitCards.length-1;i>=0;i--){
-        var h=S.hitCards[i];
-        if(mx>=h.x&&mx<=h.x+h.w&&my>=h.y&&my<=h.y+h.h){ openCard(h.c); break; }
+      for(var i=S.hit.length-1;i>=0;i--){
+        var h=S.hit[i];
+        if(mx>=h.x&&mx<=h.x+h.w&&my>=h.y&&my<=h.y+h.h){ openK(h.k); break; }
       }
     }
   }
   touchStart=null;
 });
 
-document.getElementById('play').addEventListener('click',function(){
-  S.playing=!S.playing; this.textContent=S.playing?'❚❚ 暂停':'▶ 播放';
-  if(S.playing&&S.idx>=S.snap.length-2){ S.idx=-1; apply(); }
-});
-document.getElementById('step').addEventListener('click',function(){
-  S.playing=false; document.getElementById('play').textContent='▶ 播放';
-  if(S.idx<S.snap.length-2){ S.idx++; apply(); }
-});
 document.getElementById('reset').addEventListener('click',function(){
-  S.eye={x:0,y:1.6,z:2.6}; S.yaw=0; S.pitch=-0.03;
+  S.eye={x:0,y:1.62,z:3.15}; S.yaw=0; S.pitch=-0.01;
   document.getElementById('hint').style.opacity=1;
 });
-document.getElementById('labels').addEventListener('click',function(){
-  S.labels=!S.labels; this.classList.toggle('on',S.labels);
-  toast(S.labels?'显示知识卡':'隐藏知识卡');
+document.getElementById('mapBtn').addEventListener('click',function(){
+  S.showLinks=!S.showLinks; this.classList.toggle('on',S.showLinks);
+  toast(S.showLinks?'显示知识点关联线':'隐藏关联线');
 });
 document.getElementById('stereo').addEventListener('click',function(){
   S.stereo=!S.stereo; this.classList.toggle('on',S.stereo);
@@ -543,40 +583,21 @@ function onOri(e){
   if(e.alpha==null) return;
   if(base===null) base={a:e.alpha,b:e.beta};
   S.yaw=-((e.alpha-base.a)*Math.PI/180);
-  S.pitch=Math.max(-1.1,Math.min(1.1,((e.beta-base.b)*Math.PI/180)-0.15));
+  S.pitch=Math.max(-1.0,Math.min(1.0,((e.beta-base.b)*Math.PI/180)-0.15));
   document.getElementById('hint').style.opacity=0;
 }
-function setMode(m,btn){
-  S.mode=m;
-  ['m-pre','m-in','m-post','m-level'].forEach(function(id){ document.getElementById(id).classList.remove('on'); });
-  btn.classList.add('on');
-  S.ev=trace(S.tree,m); S.snap=snapshots(S.ev); S.idx=-1; S.playing=false;
-  document.getElementById('play').textContent='▶ 播放'; apply();
-}
-document.getElementById('m-pre').addEventListener('click',function(){ setMode('pre',this); });
-document.getElementById('m-in').addEventListener('click',function(){ setMode('in',this); });
-document.getElementById('m-post').addEventListener('click',function(){ setMode('post',this); });
-document.getElementById('m-level').addEventListener('click',function(){ setMode('level',this); });
 
-function resize(){ var r=cv.getBoundingClientRect();
+function resize(){
+  var r=cv.getBoundingClientRect();
   var w=Math.round((r.width||window.innerWidth||360)*DPR), h=Math.round((r.height||window.innerHeight||640)*DPR);
-  if(w>0&&h>0&&(w!==cv.width||h!==cv.height)){ cv.width=w; cv.height=h; } }
-window.addEventListener('resize',resize);
-function tick(t){
-  if(!S.lastT) S.lastT=t;
-  var dt=t-S.lastT; S.lastT=t;
-  if(S.playing){ S.acc+=dt;
-    if(S.acc>S.speed){ S.acc=0;
-      if(S.idx<S.snap.length-2){ S.idx++; apply(); }
-      else{ S.playing=false; document.getElementById('play').textContent='▶ 播放'; }
-    }
-  }
-  render(); requestAnimationFrame(tick);
+  if(w>0&&h>0&&(w!==cv.width||h!==cv.height)){ cv.width=w; cv.height=h; }
 }
+window.addEventListener('resize',resize);
+function tick(){ render(); requestAnimationFrame(tick); }
 resize();
-setTree('ABD##EH##I##CF##G##');
+setTimeout(function(){ var el=document.getElementById('hint'); if(el) el.style.opacity=0; }, 6000);
+window.__S=S; window.__K=K;
 requestAnimationFrame(tick);
-window.__S=S;
 })();
 </script>
 </body>
