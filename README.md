@@ -2,7 +2,7 @@
 
 《数据结构与算法》实验三（二叉树的建立及遍历）的扩展案例：把二叉树的四种遍历做成**可交互的三维演示**，支持 **AR 叠加** 与 **沉浸式 VR** 两种形态，全部在一个 HTML 文件里，离线可运行。
 
-在线演示：部署 GitHub Pages 后，打开 `https://<用户名>.github.io/数据结构实验/`
+在线演示：<https://xulu-xurui.github.io/data-structure-lab/>
 
 ---
 
@@ -48,7 +48,7 @@
 
 1. 仓库 → Settings → Pages
 2. Source 选 **Deploy from a branch**，分支 **main**，目录 **/(root)**，保存
-3. 等约 1 分钟，访问 `https://<用户名>.github.io/数据结构实验/`
+3. 等约 1 分钟，访问 `https://xulu-xurui.github.io/data-structure-lab/`
 4. 手机打开该链接 → 点「AR 摄像头」→ 允许权限
 
 ---
