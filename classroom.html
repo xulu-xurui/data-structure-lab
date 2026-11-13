@@ -71,6 +71,7 @@
 </div>
 
 <div class="hud" id="tip">
+  <div style="color:#7fd0ff;font-size:11px;letter-spacing:1px;margin-bottom:6px">v2 · 思维导图版</div>
   <div><b>10</b> 个知识点分布在教室里</div>
   <div style="margin-top:6px">点卡片看详解<br>详解底部可跳到<a style="color:#8ecbf0">关联知识点</a></div>
 </div>
@@ -673,6 +674,7 @@ window.addEventListener('resize',resize);
 function tick(){ stepTween(); render(); requestAnimationFrame(tick); }
 resize();
 setTimeout(function(){ var el=document.getElementById('hint'); if(el) el.style.opacity=0; }, 6000);
+if(window.innerWidth<window.innerHeight){ setTimeout(function(){ toast('竖屏视野较窄，横过来看更完整'); },1200); }
 window.__S=S; window.__K=K;
 requestAnimationFrame(tick);
 })();
