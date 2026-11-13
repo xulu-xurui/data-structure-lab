@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>二叉树 · 教室 AR 课堂</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;overflow:hidden;background:#05070c;color:#dfe7f2;
+    font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif}
+  canvas{display:block;width:100%;height:100%;touch-action:none}
+  .hud{position:fixed;background:rgba(10,15,24,.78);border:1px solid #22304a;border-radius:10px;
+    backdrop-filter:blur(8px);font-size:12px}
+  #bar{left:14px;top:14px;padding:10px 12px;width:270px}
+  .row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+  button{padding:6px 9px;font-size:12px;border-radius:7px;border:1px solid #2b3a54;
+    background:#121a28;color:#c6d2e2;cursor:pointer;font-family:inherit}
+  button:hover{background:#1a2436}
+  button.on{background:#1d4f66;border-color:#2f7f9e;color:#cdf1ff}
+  .label{color:#7d8da6;font-size:11px;margin:6px 0 3px}
+  #info{right:14px;top:14px;padding:10px 12px;width:160px;line-height:1.7;color:#93a3ba}
+  .chips{display:flex;gap:4px;flex-wrap:wrap;margin-top:2px;max-height:90px;overflow:hidden}
+  .chip{min-width:22px;height:22px;line-height:20px;text-align:center;border-radius:5px;font-size:12px;
+    border:1px solid #34647d;background:#0f2b38;color:#9adcf5;font-family:Consolas,monospace}
+  .chip.v{border-color:#2f6b48;background:#12301f;color:#8fe0a9}
+  #card{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(86vw,460px);
+    background:rgba(11,17,27,.96);border:1px solid #2f4a6b;border-radius:14px;padding:18px 20px;
+    display:none;z-index:30;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+  #card.on{display:block}
+  #card h3{margin:0 0 10px;font-size:16px;color:#8fd3ff;font-weight:600}
+  #card p{margin:8px 0;font-size:13px;line-height:1.9;color:#b9c7da}
+  #card code{color:#9be7a8;font-family:Consolas,monospace;background:#0d1a26;padding:1px 5px;border-radius:4px}
+  #card .x{position:absolute;right:14px;top:12px;color:#5f7590;cursor:pointer;font-size:16px}
+  #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);padding:8px 14px;border-radius:9px;
+    background:rgba(12,18,28,.92);border:1px solid #26364f;font-size:12px;color:#a9b8cc;opacity:0;
+    transition:.3s;pointer-events:none;z-index:40}
+  #toast.show{opacity:1}
+  #hint{position:fixed;left:50%;top:46%;transform:translate(-50%,-50%);text-align:center;color:#6b7f9c;
+    font-size:13px;line-height:2;pointer-events:none;transition:.4s}
+  @media (max-width:560px){
+    #bar{left:8px;right:8px;top:8px;width:auto;max-height:46vh;overflow-y:auto;padding:8px}
+    #bar button{padding:8px 10px;font-size:13px}
+    #info{left:8px;right:8px;top:auto;bottom:8px;width:auto;padding:6px 10px;display:flex;gap:12px;align-items:center}
+    #info>div{margin-top:0!important;white-space:nowrap}
+    #info .chips{max-height:24px;overflow:hidden;flex:1}
+    #hint{font-size:12px;top:38%}
+  }
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+
+<div class="hud" id="bar">
+  <div class="row">
+    <button id="play">▶ 播放</button>
+    <button id="step">下一步</button>
+    <button id="reset">回到讲台</button>
+  </div>
+  <div class="row">
+    <button id="m-pre" class="on">先序</button>
+    <button id="m-in">中序</button>
+    <button id="m-post">后序</button>
+    <button id="m-level">层次</button>
+  </div>
+  <div class="row">
+    <button id="gyro">陀螺仪</button>
+    <button id="stereo">立体分屏</button>
+    <button id="labels" class="on">知识卡</button>
+  </div>
+  <div class="label">点房间里的知识卡可以展开讲解</div>
+</div>
+
+<div class="hud" id="info">
+  <div>栈 / 队列</div><div class="chips" id="stack"></div>
+  <div style="margin-top:8px">已访问</div><div class="chips" id="visited"></div>
+</div>
+
+<div id="card"><span class="x" id="cardX">✕</span><h3 id="cardT"></h3><div id="cardB"></div></div>
+<div id="hint">你正站在教室中间　·　拖动环顾四周<br>中间是二叉树，四周是知识点卡片</div>
+<div id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+var cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+var DPR=Math.min(window.devicePixelRatio||1,2);
+
+/* ================= 树 ================= */
+var SP=1.0;
+function parseTree(seq){
+  var i=0,nodes=[],id=0;
+  function build(d){ if(i>=seq.length) return -1; var ch=seq[i++]; if(ch==='#') return -1;
+    var me=id++; nodes.push({id:me,ch:ch,depth:d,l:-1,r:-1,x:0});
+    var l=build(d+1),r=build(d+1); nodes[me].l=l; nodes[me].r=r; return me; }
+  var root=build(0),c=0;
+  (function ino(n){ if(n<0) return; ino(nodes[n].l); nodes[n].x=c++; ino(nodes[n].r); })(root);
+  var maxD=0; nodes.forEach(function(n){ if(n.depth>maxD) maxD=n.depth; });
+  var half=(c-1)/2;
+  nodes.forEach(function(n){
+    n.px=(n.x-half)*SP; n.py=-(n.depth-maxD/2)*SP*0.95; n.pz=Math.sin(n.px*1.1)*0.22;
+  });
+  return {nodes:nodes,root:root,count:c,maxD:maxD,halfW:half*SP,halfH:maxD*SP/2};
+}
+function trace(tree,mode){
+  var ev=[],N=tree.nodes;
+  function v(n){ ev.push({t:'visit',n:n}); }
+  if(mode==='pre'){ var st=[tree.root];
+    while(st.length){ var p=st.pop(); v(p); if(N[p].r>=0) st.push(N[p].r); if(N[p].l>=0) st.push(N[p].l); } }
+  else if(mode==='in'){ var s2=[],p2=tree.root;
+    while(p2>=0||s2.length){ while(p2>=0){ s2.push(p2); p2=N[p2].l; } p2=s2.pop(); v(p2); p2=N[p2].r; } }
+  else if(mode==='post'){ var s3=[],p3=tree.root,last=-1;
+    while(p3>=0||s3.length){ while(p3>=0){ s3.push(p3); p3=N[p3].l; }
+      var top=s3[s3.length-1];
+      if(N[top].r>=0&&N[top].r!==last){ p3=N[top].r; }
+      else{ v(top); s3.pop(); last=top; p3=-1; } } }
+  else { var q=[tree.root];
+    while(q.length){ var p4=q.shift(); v(p4); if(N[p4].l>=0) q.push(N[p4].l); if(N[p4].r>=0) q.push(N[p4].r); } }
+  return ev;
+}
+function snapshots(ev){
+  var st=[],q=[],vis=[],out=[{stack:[],queue:[],visited:[]}];
+  for(var i=0;i<ev.length;i++){ var e=ev[i]; if(e.t==='visit') vis.push(e.n);
+    out.push({stack:st.slice(),queue:q.slice(),visited:vis.slice()}); }
+  return out;
+}
+
+/* ================= 场景 ================= */
+var TREE_ORIGIN={x:0,y:1.62,z:-0.9}; var TREE_SCALE=0.62;
+var S={ tree:null, mode:'pre', ev:[], snap:[], idx:-1, playing:false, speed:620,
+        stereo:false, labels:true,
+        eye:{x:0,y:1.6,z:2.6}, yaw:0, pitch:-0.03,
+        drag:null, acc:0, lastT:0, cards:[], hoverCard:-1, hitCards:[] };
+
+function focalOf(){ return Math.min(cv.clientWidth||360, cv.clientHeight||640)*0.95; }
+
+/* ---- 3D 基础 ---- */
+function project(x,y,z,vp){
+  var dx=x-vp.ex, dy=y-vp.ey, dz=z-vp.ez;
+  var c=Math.cos(vp.yaw), s=Math.sin(vp.yaw);
+  var Xc=dx*c-dz*s, d=-(dx*s+dz*c);
+  if(d<=0.06) return null;
+  var cp=Math.cos(vp.pitch), sp=Math.sin(vp.pitch);
+  var Yc=dy*cp-d*sp, d2=dy*sp+d*cp;
+  if(d2<=0.06) return null;
+  var f=vp.focal/d2;
+  return {x:vp.vw/2+Xc*f+vp.shiftX, y:vp.vh/2-Yc*f, f:f, d:d2};
+}
+
+/* ---- 教室几何 ---- */
+function buildRoom(){
+  var F=[];
+  function quad(p,fill,opt){
+    opt=opt||{};
+    // 法线明暗
+    var ax=p[1][0]-p[0][0], ay=p[1][1]-p[0][1], az=p[1][2]-p[0][2];
+    var bx=p[2][0]-p[0][0], by=p[2][1]-p[0][1], bz=p[2][2]-p[0][2];
+    var nx=ay*bz-az*by, ny=az*bx-ax*bz, nz=ax*by-ay*bx;
+    var len=Math.sqrt(nx*nx+ny*ny+nz*nz)||1; nx/=len; ny/=len; nz/=len;
+    var L=[0.35,0.72,-0.6]; var ll=Math.sqrt(L[0]*L[0]+L[1]*L[1]+L[2]*L[2]);
+    var lam=Math.max(0,Math.abs((nx*L[0]+ny*L[1]+nz*L[2])/ll));
+    var shade=0.55+0.45*lam;
+    F.push({p:p, fill:fill, shade:shade, alpha:opt.alpha, line:opt.line});
+  }
+  var W=6, D=4.6, H=3.2;   // 半宽、半深、高
+
+  // 地板（瓷砖格）
+  var nx=4, nz=4;
+  for(var i=0;i<nx;i++) for(var j=0;j<nz;j++){
+    var x0=-W+2*W*i/nx, x1=-W+2*W*(i+1)/nx;
+    var z0=-D+2*D*j/nz, z1=-D+2*D*(j+1)/nz;
+    quad([[x0,0,z0],[x1,0,z0],[x1,0,z1],[x0,0,z1]], (i+j)%2?'#2c3242':'#313847', {line:'#3c4457'});
+  }
+  // 天花板
+  for(var i2=0;i2<2;i2++) for(var j2=0;j2<2;j2++){
+    var a0=-W+2*W*i2/2, a1=-W+2*W*(i2+1)/2;
+    var b0=-D+2*D*j2/2, b1=-D+2*D*(j2+1)/2;
+    quad([[a0,H,b0],[a1,H,b0],[a1,H,b1],[a0,H,b1]], '#232a36');
+  }
+  // 后墙（讲台侧 z=-D）
+  for(var i3=0;i3<3;i3++){
+    var c0=-W+2*W*i3/3, c1=-W+2*W*(i3+1)/3;
+    quad([[c0,0,-D],[c1,0,-D],[c1,H,-D],[c0,H,-D]], '#39435a');
+  }
+  // 左右墙
+  for(var j3=0;j3<2;j3++){
+    var d0=-D+2*D*j3/2, d1=-D+2*D*(j3+1)/2;
+    quad([[-W,0,d0],[-W,0,d1],[-W,H,d1],[-W,H,d0]], '#333c50');
+    quad([[W,0,d0],[W,0,d1],[W,H,d1],[W,H,d0]], '#333c50');
+  }
+  // 前墙（身后 z=D）
+  quad([[-W,0,D],[W,0,D],[W,H,D],[-W,H,D]], '#2f3644');
+
+  // 黑板
+  quad([[-3.4,0.9,-D+0.02],[3.4,0.9,-D+0.02],[3.4,2.5,-D+0.02],[-3.4,2.5,-D+0.02]], '#1e3a2e', {line:'#2d5a47'});
+  // 讲台
+  quad([[-1.6,0,-D+0.9],[1.6,0,-D+0.9],[1.6,0.55,-D+0.9],[-1.6,0.55,-D+0.9]], '#4a4034');
+  quad([[-1.6,0.55,-D+0.9],[1.6,0.55,-D+0.9],[1.6,0.55,-D+1.5],[-1.6,0.55,-D+1.5]], '#5a4e3f');
+
+  // 课桌 3 排 × 2 列
+  var desks=[[-2.6,1.2],[2.6,1.2],[-2.6,0.1],[2.6,0.1],[-2.6,-1.0],[2.6,-1.0]];
+  desks.forEach(function(d){
+    var cx=d[0], cz=d[1], w=1.1, dp=0.62, hh=0.74;
+    // 桌面
+    quad([[cx-w/2,hh,cz-dp/2],[cx+w/2,hh,cz-dp/2],[cx+w/2,hh,cz+dp/2],[cx-w/2,hh,cz+dp/2]], '#6a5a44');
+    // 四条边
+    quad([[cx-w/2,0,cz-dp/2],[cx+w/2,0,cz-dp/2],[cx+w/2,hh,cz-dp/2],[cx-w/2,hh,cz-dp/2]], '#4e4436');
+    quad([[cx+w/2,0,cz+dp/2],[cx-w/2,0,cz+dp/2],[cx-w/2,hh,cz+dp/2],[cx+w/2,hh,cz+dp/2]], '#463d31');
+    quad([[cx+w/2,0,cz-dp/2],[cx+w/2,0,cz+dp/2],[cx+w/2,hh,cz+dp/2],[cx+w/2,hh,cz-dp/2]], '#423a2f');
+    // 椅子
+    quad([[cx-w/2+0.2,0.45,cz+0.55],[cx+w/2-0.2,0.45,cz+0.55],[cx+w/2-0.2,0.45,cz+0.95],[cx-w/2+0.2,0.45,cz+0.95]], '#3c4658');
+    quad([[cx-w/2+0.2,0.45,cz+0.95],[cx+w/2-0.2,0.45,cz+0.95],[cx+w/2-0.2,0.9,cz+0.95],[cx-w/2+0.2,0.9,cz+0.95]], '#333c4c');
+  });
+
+  // 左墙窗户（发光）
+  for(var k=0;k<3;k++){
+    var zz=-2.6+k*1.9;
+    quad([[-W+0.03,1.25,zz],[-W+0.03,1.25,zz+1.35],[-W+0.03,2.7,zz+1.35],[-W+0.03,2.7,zz]], '#8fc6e8', {alpha:0.9,line:'#cfe9f8'});
+  }
+  // 顶部灯板
+  for(var m=0;m<4;m++){
+    var lx=(m%2?1.7:-1.7), lz=(m<2?1.6:-1.4);
+    quad([[lx-0.55,H-0.02,lz-0.26],[lx+0.55,H-0.02,lz-0.26],[lx+0.55,H-0.02,lz+0.26],[lx-0.55,H-0.02,lz+0.26]], '#cfe2ff', {alpha:0.5});
+  }
+  return F;
+}
+var ROOM=buildRoom();
+
+/* ---- 知识卡片 ---- */
+S.cards=[
+  { x:-4.4, y:1.95, z:-0.8, w:2.0, h:1.15, c:'#2b5d8a', title:'二叉链表存储',
+    body:'<p>每个结点三个域：<code>data</code>、<code>*lchild</code>、<code>*rchild</code>。</p>'+
+         '<p>左孩子指针指向左子树根，右孩子指针指向右子树根；没有孩子时置为 <code>NULL</code>，建树时用 <code>#</code> 表示空指针。</p>'+
+         '<p>二叉链表只能从父到子，想找父结点需要额外保存路径（栈就是干这个的）。</p>' },
+  { x:4.4, y:1.95, z:-0.8, w:2.0, h:1.15, c:'#2f6b4a', title:'四种遍历',
+    body:'<p><code>先序</code> 根 → 左 → 右　（DLR）</p>'+
+         '<p><code>中序</code> 左 → 根 → 右　（LDR）</p>'+
+         '<p><code>后序</code> 左 → 右 → 根　（LRD）</p>'+
+         '<p><code>层次</code> 一层一层从左到右（靠队列）</p>'+
+         '<p>递归写法三行代码，非递归写法靠显式栈保存“回来的路”。</p>' },
+  { x:-4.4, y:1.95, z:1.4, w:2.0, h:1.15, c:'#6b3f7a', title:'栈与队列',
+    body:'<p><code>栈</code> 后进先出：非递归遍历用它保存祖先结点，后序还要用 <code>last</code> 记录上一个访问的结点，判断右子树是否已访问。</p>'+
+         '<p><code>队列</code> 先进先出：层次遍历时，出队的结点把左右孩子依次入队，天然保证“按层推进”。</p>' },
+  { x:4.4, y:1.95, z:1.4, w:2.0, h:1.15, c:'#8a6220', title:'二叉树的五个性质',
+    body:'<p>① 第 <code>i</code> 层最多 <code>2^(i-1)</code> 个结点。</p>'+
+         '<p>② 高为 <code>h</code> 的二叉树最多 <code>2^h − 1</code> 个结点（满二叉树）。</p>'+
+         '<p>③ 叶子数 <code>n0</code> 与度为 2 的结点数 <code>n2</code> 满足 <code>n0 = n2 + 1</code>。</p>'+
+         '<p>④ <code>n</code> 个结点的完全二叉树高度为 <code>⌊log₂n⌋ + 1</code>。</p>'+
+         '<p>⑤ 顺序存储适合完全二叉树，一般二叉树用二叉链表。</p>' },
+  { x:0, y:2.75, z:-4.3, w:2.6, h:1.1, c:'#7a3b3b', title:'按先序序列建树',
+    body:'<p>读入一个字符：是 <code>#</code> 就返回空；否则新建结点，递归建左子树、再建右子树。</p>'+
+         '<p>游标必须用 <code>*int</code> 或全局变量传递，保证三个递归调用共享同一个读指针——这是建树最容易错的地方。</p>' }
+];
+
+/* ---- 状态 ---- */
+function setTree(seq){
+  S.tree=parseTree(seq);
+  S.ev=trace(S.tree,S.mode); S.snap=snapshots(S.ev); S.idx=-1; S.playing=false;
+  document.getElementById('play').textContent='▶ 播放';
+  apply();
+}
+function apply(){
+  var s=S.snap[Math.max(0,Math.min(S.idx+1,S.snap.length-1))];
+  S.vis=s.visited;
+  document.getElementById('stack').innerHTML=(s.stack||[]).map(function(n){return '<span class="chip">'+S.tree.nodes[n].ch+'</span>';}).join('')||'<span style="color:#3c4b63">空</span>';
+  document.getElementById('visited').innerHTML=(s.visited||[]).map(function(n){return '<span class="chip v">'+S.tree.nodes[n].ch+'</span>';}).join('')||'<span style="color:#3c4b63">空</span>';
+}
+
+/* ---- 绘制 ---- */
+function shade(hex,f){
+  var r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  r=Math.min(255,Math.round(r*f)); g=Math.min(255,Math.round(g*f)); b=Math.min(255,Math.round(b*f));
+  return 'rgb('+r+','+g+','+b+')';
+}
+function drawRoom(vp){
+  var list=[];
+  for(var i=0;i<ROOM.length;i++){
+    var f=ROOM[i], ps=[], ok=true, dsum=0;
+    for(var k=0;k<4;k++){
+      var p=project(f.p[k][0],f.p[k][1],f.p[k][2],vp);
+      if(!p){ ok=false; break; }
+      ps.push(p); dsum+=p.d;
+    }
+    if(ok) list.push({ps:ps, d:dsum/4, f:f});
+  }
+  list.sort(function(a,b){ return b.d-a.d; });
+  for(var j=0;j<list.length;j++){
+    var it=list[j], f2=it.f;
+    ctx.beginPath();
+    ctx.moveTo(it.ps[0].x,it.ps[0].y);
+    for(var q=1;q<4;q++) ctx.lineTo(it.ps[q].x,it.ps[q].y);
+    ctx.closePath();
+    ctx.globalAlpha=f2.alpha||1;
+    ctx.fillStyle=shade(f2.fill,f2.shade);
+    ctx.fill();
+    if(f2.line){ ctx.globalAlpha=0.35; ctx.strokeStyle=f2.line; ctx.lineWidth=1; ctx.stroke(); }
+    ctx.globalAlpha=1;
+  }
+}
+
+function drawTree(vp){
+  var T=S.tree, N=T.nodes;
+  // 顶灯光束（半透明光锥）
+  (function(){
+    var q=[[-1.15,3.16,-0.9],[1.15,3.16,-0.9],[2.3,0.02,-0.9],[-2.3,0.02,-0.9]];
+    var ps=q.map(function(p){ return project(p[0],p[1],p[2],vp); });
+    if(ps.some(function(p){return !p;})) return;
+    var g=ctx.createLinearGradient(ps[0].x,ps[0].y,ps[2].x,ps[2].y);
+    g.addColorStop(0,'rgba(200,230,255,.16)');
+    g.addColorStop(1,'rgba(200,230,255,0)');
+    ctx.beginPath(); ctx.moveTo(ps[0].x,ps[0].y);
+    for(var i=1;i<4;i++) ctx.lineTo(ps[i].x,ps[i].y);
+    ctx.closePath(); ctx.fillStyle=g; ctx.fill();
+  })();
+  var visited={}; S.vis.forEach(function(n){visited[n]=1;});
+  var ox=TREE_ORIGIN.x, oy=TREE_ORIGIN.y, oz=TREE_ORIGIN.z;
+
+  // 访问轨迹光带
+  var pts=[];
+  for(var i=0;i<S.vis.length;i++){ var n=N[S.vis[i]]; var p=project(ox+n.px*TREE_SCALE, oy+n.py*TREE_SCALE, oz+n.pz*TREE_SCALE, vp); if(p) pts.push(p); }
+  if(pts.length>1){
+    ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
+    for(var k=1;k<pts.length;k++) ctx.lineTo(pts[k].x,pts[k].y);
+    ctx.strokeStyle='rgba(90,220,255,.28)'; ctx.lineWidth=2; ctx.stroke();
+  }
+
+  // 边
+  N.forEach(function(n){
+    [n.l,n.r].forEach(function(c){
+      if(c<0) return;
+      var a=project(ox+n.px*TREE_SCALE,oy+n.py*TREE_SCALE,oz+n.pz*TREE_SCALE,vp), b=project(ox+N[c].px*TREE_SCALE,oy+N[c].py*TREE_SCALE,oz+N[c].pz*TREE_SCALE,vp);
+      if(!a||!b) return;
+      var act=visited[n.id]&&visited[c];
+      ctx.strokeStyle=act?'rgba(90,230,170,.85)':'rgba(140,190,255,.35)';
+      ctx.lineWidth=act?3:1.6;
+      ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+    });
+  });
+
+  // 结点
+  var l2=N.map(function(n){ var p=project(ox+n.px*TREE_SCALE,oy+n.py*TREE_SCALE,oz+n.pz*TREE_SCALE,vp); return p?{n:n,p:p}:null; })
+            .filter(Boolean).sort(function(a,b){ return b.p.d-a.p.d; });
+  l2.forEach(function(o){
+    var n=o.n,p=o.p, r=Math.max(8,Math.min(46,0.2*p.f));
+    var cur=(S.vis.length&&S.vis[S.vis.length-1]===n.id), vis=visited[n.id];
+    ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2);
+    var rg=ctx.createRadialGradient(p.x-r*.3,p.y-r*.35,r*.1,p.x,p.y,r);
+    if(cur){ rg.addColorStop(0,'#fff6d0'); rg.addColorStop(.55,'#ffd166'); rg.addColorStop(1,'#c98a10'); }
+    else if(vis){ rg.addColorStop(0,'#c4ffe0'); rg.addColorStop(.6,'#54dd9b'); rg.addColorStop(1,'#1c7d52'); }
+    else { rg.addColorStop(0,'#93a9c9'); rg.addColorStop(1,'#33425c'); }
+    ctx.fillStyle=rg; ctx.fill();
+    if(cur){ ctx.shadowColor='rgba(255,210,90,.9)'; ctx.shadowBlur=24; ctx.strokeStyle='rgba(255,230,150,.9)'; ctx.lineWidth=2; ctx.stroke(); ctx.shadowBlur=0; }
+    ctx.fillStyle=cur?'#3a2600':(vis?'#03251a':'#dfe9f7');
+    ctx.font='bold '+Math.round(r*0.95)+'px Consolas';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(n.ch,p.x,p.y+1);
+    if(cur){
+      var ph=(Date.now()%900)/900;
+      ctx.beginPath(); ctx.arc(p.x,p.y,r+ph*34,0,Math.PI*2);
+      ctx.strokeStyle='rgba(255,214,102,'+(0.55*(1-ph))+')'; ctx.lineWidth=2.5; ctx.stroke();
+    }
+  });
+  ctx.textBaseline='alphabetic';
+
+  // 当前步提示
+  if(S.vis.length){
+    var total=S.snap.length-1, curId=S.vis[S.vis.length-1];
+    var an=project(ox, oy+(T.maxD*0.5+0.75)*SP*TREE_SCALE, oz, vp);
+    if(an){
+      var txt='第 '+(S.idx+1)+' / '+total+' 步　·　访问 '+N[curId].ch;
+      ctx.font='13px "Microsoft YaHei",sans-serif';
+      ctx.textAlign='center';
+      var tw=ctx.measureText(txt).width+20;
+      ctx.fillStyle='rgba(9,17,28,.78)';
+      ctx.beginPath();
+      if(ctx.roundRect) ctx.roundRect(an.x-tw/2, an.y-15, tw, 26, 13); else ctx.rect(an.x-tw/2, an.y-15, tw, 26);
+      ctx.fill();
+      ctx.strokeStyle='rgba(90,190,255,.35)'; ctx.lineWidth=1; ctx.stroke();
+      ctx.fillStyle='#9fe0ff';
+      ctx.fillText(txt, an.x, an.y+3);
+      ctx.textAlign='left';
+    }
+  }
+}
+
+function drawCards(vp){
+  S.hitCards=[];
+  if(!S.labels) return;
+  var arr=S.cards.map(function(c){
+    var p=project(c.x,c.y,c.z,vp);
+    return p?{c:c,p:p}:null;
+  }).filter(Boolean).sort(function(a,b){ return b.p.d-a.p.d; });
+  arr.forEach(function(o){
+    var c=o.c,p=o.p;
+    var w=Math.max(80,Math.min(380,c.w*p.f*0.85)), h=w*c.h/c.w;
+    var x=p.x-w/2, y=p.y-h/2;
+    S.hitCards.push({x:x,y:y,w:w,h:h,c:c});
+    var alpha=Math.max(0.35,Math.min(1, 2.6-p.d*0.16));
+    ctx.globalAlpha=alpha;
+    // 卡片
+    ctx.beginPath();
+    if(ctx.roundRect) ctx.roundRect(x,y,w,h,10); else ctx.rect(x,y,w,h);
+    var g=ctx.createLinearGradient(x,y,x,y+h);
+    g.addColorStop(0,c.c); g.addColorStop(1,'#101a26');
+    ctx.fillStyle=g; ctx.globalAlpha=alpha*0.92; ctx.fill();
+    ctx.globalAlpha=alpha;
+    ctx.strokeStyle='rgba(160,205,255,.55)'; ctx.lineWidth=1.2; ctx.stroke();
+    // 标题
+    ctx.fillStyle='#eaf3ff';
+    ctx.font='bold '+Math.max(9,Math.round(w*0.082))+'px "Microsoft YaHei",sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText(c.title, x+w/2, y+h*0.42);
+    // 小字提示
+    ctx.fillStyle='rgba(200,225,255,.7)';
+    ctx.font=Math.max(8,Math.round(w*0.055))+'px "Microsoft YaHei",sans-serif';
+    ctx.fillText('点击查看', x+w/2, y+h*0.68);
+    ctx.globalAlpha=1;
+  });
+  ctx.globalAlpha=1;
+}
+
+function vp(full,shiftX){
+  var W=cv.clientWidth||360, H=cv.clientHeight||640;
+  return {vw:full?W:W/2, vh:H, ex:S.eye.x, ey:S.eye.y, ez:S.eye.z,
+          yaw:S.yaw, pitch:S.pitch, focal:focalOf(), shiftX:shiftX||0};
+}
+function render(){
+  var W=cv.clientWidth||360, H=cv.clientHeight||640;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  var bg=ctx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#080d16'); bg.addColorStop(1,'#05070c');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+  if(!S.stereo){
+    var v=vp(true,0);
+    drawRoom(v); drawTree(v); drawCards(v);
+  } else {
+    var e0=0.045;
+    [{ox:0,off:-e0},{ox:W/2,off:e0}].forEach(function(e){
+      ctx.save(); ctx.beginPath(); ctx.rect(e.ox,0,W/2,H); ctx.clip(); ctx.translate(e.ox,0);
+      var v2=vp(false,0); v2.ex+=Math.cos(S.yaw)*e.off; v2.ez+=-Math.sin(S.yaw)*e.off;
+      drawRoom(v2); drawTree(v2);
+      ctx.restore();
+    });
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    ctx.strokeStyle='rgba(0,0,0,.85)'; ctx.beginPath(); ctx.moveTo(W/2,0); ctx.lineTo(W/2,H); ctx.stroke();
+  }
+}
+
+/* ---- 交互 ---- */
+function toast(t){ var el=document.getElementById('toast'); el.textContent=t; el.classList.add('show');
+  clearTimeout(el._t); el._t=setTimeout(function(){el.classList.remove('show');},1600); }
+function openCard(c){
+  document.getElementById('cardT').textContent=c.title;
+  document.getElementById('cardB').innerHTML=c.body;
+  document.getElementById('card').classList.add('on');
+}
+document.getElementById('cardX').addEventListener('click',function(){
+  document.getElementById('card').classList.remove('on');
+});
+
+cv.addEventListener('mousedown',function(e){ S.drag={x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY}; });
+window.addEventListener('mouseup',function(e){
+  if(S.drag){
+    var moved=Math.abs(e.clientX-S.drag.sx)+Math.abs(e.clientY-S.drag.sy);
+    if(moved<5){
+      var r=cv.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
+      for(var i=S.hitCards.length-1;i>=0;i--){
+        var h=S.hitCards[i];
+        if(mx>=h.x&&mx<=h.x+h.w&&my>=h.y&&my<=h.y+h.h){ openCard(h.c); return; }
+      }
+    }
+  }
+  S.drag=null;
+});
+window.addEventListener('mousemove',function(e){
+  if(S.drag){
+    S.yaw+=(e.clientX-S.drag.x)*0.004;
+    S.pitch=Math.max(-1.1,Math.min(1.1,S.pitch+(e.clientY-S.drag.y)*0.003));
+    S.drag.x=e.clientX; S.drag.y=e.clientY;
+    document.getElementById('hint').style.opacity=0;
+  }
+});
+cv.addEventListener('wheel',function(e){ e.preventDefault();
+  var dx=Math.sin(S.yaw), dz=Math.cos(S.yaw);
+  S.eye.x+=dx*e.deltaY*0.002; S.eye.z-=dz*e.deltaY*0.002;
+  S.eye.x=Math.max(-5,Math.min(5,S.eye.x)); S.eye.z=Math.max(-3.6,Math.min(4,S.eye.z));
+},{passive:false});
+
+var touchStart=null;
+cv.addEventListener('touchstart',function(e){
+  if(e.touches.length===1){ var t=e.touches[0]; touchStart={x:t.clientX,y:t.clientY,sx:t.clientX,sy:t.clientY}; }
+},{passive:true});
+cv.addEventListener('touchmove',function(e){
+  if(touchStart&&e.touches.length===1){ var t=e.touches[0];
+    S.yaw+=(t.clientX-touchStart.x)*0.005;
+    S.pitch=Math.max(-1.1,Math.min(1.1,S.pitch+(t.clientY-touchStart.y)*0.004));
+    touchStart.x=t.clientX; touchStart.y=t.clientY;
+    document.getElementById('hint').style.opacity=0; }
+},{passive:true});
+cv.addEventListener('touchend',function(e){
+  if(touchStart){
+    var t=e.changedTouches[0];
+    if(t && Math.abs(t.clientX-touchStart.sx)+Math.abs(t.clientY-touchStart.sy)<8){
+      var r=cv.getBoundingClientRect(), mx=t.clientX-r.left, my=t.clientY-r.top;
+      for(var i=S.hitCards.length-1;i>=0;i--){
+        var h=S.hitCards[i];
+        if(mx>=h.x&&mx<=h.x+h.w&&my>=h.y&&my<=h.y+h.h){ openCard(h.c); break; }
+      }
+    }
+  }
+  touchStart=null;
+});
+
+document.getElementById('play').addEventListener('click',function(){
+  S.playing=!S.playing; this.textContent=S.playing?'❚❚ 暂停':'▶ 播放';
+  if(S.playing&&S.idx>=S.snap.length-2){ S.idx=-1; apply(); }
+});
+document.getElementById('step').addEventListener('click',function(){
+  S.playing=false; document.getElementById('play').textContent='▶ 播放';
+  if(S.idx<S.snap.length-2){ S.idx++; apply(); }
+});
+document.getElementById('reset').addEventListener('click',function(){
+  S.eye={x:0,y:1.6,z:2.6}; S.yaw=0; S.pitch=-0.03;
+  document.getElementById('hint').style.opacity=1;
+});
+document.getElementById('labels').addEventListener('click',function(){
+  S.labels=!S.labels; this.classList.toggle('on',S.labels);
+  toast(S.labels?'显示知识卡':'隐藏知识卡');
+});
+document.getElementById('stereo').addEventListener('click',function(){
+  S.stereo=!S.stereo; this.classList.toggle('on',S.stereo);
+  toast(S.stereo?'立体分屏：横屏放进 Cardboard 盒子':'已退出分屏');
+});
+document.getElementById('gyro').addEventListener('click',function(){
+  var btn=this;
+  function start(){ window.addEventListener('deviceorientation',onOri); btn.classList.add('on'); toast('陀螺仪已开启'); }
+  if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){
+    DeviceOrientationEvent.requestPermission().then(function(r){ if(r==='granted') start(); else toast('未获得权限'); });
+  } else if(window.DeviceOrientationEvent){ start(); } else { toast('不支持陀螺仪'); }
+});
+var base=null;
+function onOri(e){
+  if(e.alpha==null) return;
+  if(base===null) base={a:e.alpha,b:e.beta};
+  S.yaw=-((e.alpha-base.a)*Math.PI/180);
+  S.pitch=Math.max(-1.1,Math.min(1.1,((e.beta-base.b)*Math.PI/180)-0.15));
+  document.getElementById('hint').style.opacity=0;
+}
+function setMode(m,btn){
+  S.mode=m;
+  ['m-pre','m-in','m-post','m-level'].forEach(function(id){ document.getElementById(id).classList.remove('on'); });
+  btn.classList.add('on');
+  S.ev=trace(S.tree,m); S.snap=snapshots(S.ev); S.idx=-1; S.playing=false;
+  document.getElementById('play').textContent='▶ 播放'; apply();
+}
+document.getElementById('m-pre').addEventListener('click',function(){ setMode('pre',this); });
+document.getElementById('m-in').addEventListener('click',function(){ setMode('in',this); });
+document.getElementById('m-post').addEventListener('click',function(){ setMode('post',this); });
+document.getElementById('m-level').addEventListener('click',function(){ setMode('level',this); });
+
+function resize(){ var r=cv.getBoundingClientRect();
+  var w=Math.round((r.width||window.innerWidth||360)*DPR), h=Math.round((r.height||window.innerHeight||640)*DPR);
+  if(w>0&&h>0&&(w!==cv.width||h!==cv.height)){ cv.width=w; cv.height=h; } }
+window.addEventListener('resize',resize);
+function tick(t){
+  if(!S.lastT) S.lastT=t;
+  var dt=t-S.lastT; S.lastT=t;
+  if(S.playing){ S.acc+=dt;
+    if(S.acc>S.speed){ S.acc=0;
+      if(S.idx<S.snap.length-2){ S.idx++; apply(); }
+      else{ S.playing=false; document.getElementById('play').textContent='▶ 播放'; }
+    }
+  }
+  render(); requestAnimationFrame(tick);
+}
+resize();
+setTree('ABD##EH##I##CF##G##');
+requestAnimationFrame(tick);
+window.__S=S;
+})();
+</script>
+</body>
+</html>
