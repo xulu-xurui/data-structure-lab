@@ -9,6 +9,7 @@
 | 页面 | 说明 |
 |---|---|
 | [index.html](https://xulu-xurui.github.io/data-structure-lab/) | 沉浸式遍历演示：站在二叉树里，四种遍历、点节点建树、陀螺仪、立体分屏 |
+| [vr.html](https://xulu-xurui.github.io/data-structure-lab/vr.html) | **VR 全景课堂**：7 章 29 步，从家族树类比讲到哈夫曼 WPL，逐帧动画 |
 | [classroom.html](https://xulu-xurui.github.io/data-structure-lab/classroom.html) | **教室 AR 课堂**：站在环绕的教室里，中间是二叉树，四周是知识点卡片，点卡片展开讲解 |
 
 ---
