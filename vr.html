@@ -323,13 +323,13 @@ var T5=buildTree('ABD##E##C##');             // 5 结点
 
 var CHAPTERS=[
 { name:'1 认识二叉树', steps:[
-  {t:'抬头看：这是一棵"倒挂的家族树"',
+  {t:'抬头看：这是一棵"倒挂的家族树"', s:'先抬头看这棵树。把它想成一棵倒着长的家族树：最上面是老祖宗，往下是一代一代的子孙。它和普通家族树只有一个区别——每个人最多只能有两个子节点，而且分左右。',
    p:'把二叉树想成一棵<b>倒挂的族谱</b>：根在最上面，往下是子孙。它和普通家族树的唯一区别——<span class="em">每个人最多只能有 2 个子节点</span>，而且分左右。',
    d:function(o){ placeTree(T7,0,2.15,-2.6,0.95); drawTreeModel(T7,{visited:all(T7),r:0.15,showLevel:false}); }},
-  {t:'根结点 = 最上面的老祖宗',
+  {t:'根结点 = 最上面的老祖宗', s:'最上面这个结点叫根结点，它没有父亲。你从下面任何一个结点顺着线往上走，最后都会走到它。',
    p:'整棵树只有一个<b>根结点</b>（这里是 A），它没有父亲。所有其他结点都能顺着线往上找，最终找到 A —— 这就是"根"的含义。',
    d:function(o){ drawTreeModel(T7,{highlight:{0:1},r:0.15}); label3([T7.nodes[0].wx,T7.nodes[0].wy+0.36,T7.nodes[0].wz],'根：老祖宗','#ff9f43',0.13); }},
-  {t:'每个结点最多 2 个子节点 —— 这才叫"二叉"',
+  {t:'每个结点最多 2 个子节点 —— 这才叫"二叉"', s:'你看根结点 A，它只有 B 和 C 两个子节点。现在假设硬给它塞第三个，画面里这根红叉就是拒绝的意思：二叉树每个结点的度最大是二，没有第三个出口。',
    p:'看 A：它只有 B、C 两个子节点。假设现在硬给 A 塞第三个子节点（画面里那个红色分支），它<b>马上被拒绝</b>。因为"二叉树"的定义里，每个结点度最大为 2。<span class="em">二叉 = 两个叉口</span>，没有第三个出口。',
    d:function(o){
      var tt=o.t||0, blink=Math.sin(tt*3)>0;
@@ -344,7 +344,7 @@ var CHAPTERS=[
        ctx.moveTo(q.x+12,q.y-12); ctx.lineTo(q.x-12,q.y+12); ctx.stroke(); ctx.restore(); }
      label3([p2[0]+0.2,p2[1]-0.25,p2[2]],'第 3 个子节点：不允许','#ff6b6b',0.1);
    }},
-  {t:'左、右不能互换 —— 这是二叉树的灵魂',
+  {t:'左、右不能互换 —— 这是二叉树的灵魂', s:'同样是 A，把 B 放左边、C 放右边，和把 C 放左边、B 放右边，长得就不一样，它们是两棵不同的树。所以画二叉树的时候，左右位置一定要画准。',
    p:'左边这棵树是 A 的左子节点 B、右子节点 C；右边是 A 的左子节点 C、右子节点 B。<b>结点一模一样，但它们是两棵不同的树</b>。所以画二叉树时，左右位置必须画准，不能像普通树那样随便摆。',
    d:function(o){
      drawTreeModel(T7,{r:0.13});
@@ -352,31 +352,31 @@ var CHAPTERS=[
    }}
 ]},
 { name:'2 术语', steps:[
-  {t:'结点、双亲、子节点',
+  {t:'结点、双亲、子节点', s:'每一个圆圈就是一个结点。A 是 B 和 C 的双亲，B 和 C 是 A 的子节点。一条线两端，就是父母和子女的关系。',
    p:'每一个圆圈就是一个<b>结点</b>。A 是 B、C 的<b>双亲</b>，B、C 是 A 的<b>子节点</b>。同一条线两端的上下关系，就是"父母—子女"。',
    d:function(){ drawTreeModel(T7,{highlight:{0:1},r:0.15});
      label3([T7.nodes[0].wx,T7.nodes[0].wy+0.38,T7.nodes[0].wz],'双亲','#ffd479',0.1);
      var b=T7.nodes[T7.nodes[0].l], c=T7.nodes[T7.nodes[0].r];
      label3([b.wx,b.wy+0.34,b.wz],'左子节点','#9be7a8',0.09);
      label3([c.wx,c.wy+0.34,c.wz],'右子节点','#9be7a8',0.09); }},
-  {t:'叶子结点 = 没有子节点的末端',
+  {t:'叶子结点 = 没有子节点的末端', s:'D、E、F、G 下面什么都没有了，走到这里就到底了，它们叫叶子结点，就像树枝的末梢。',
    p:'D、E、F、G 没有自己的子节点，走到这里就到底了，叫<b>叶子结点</b>。像树枝的末梢，摘不到下一个结点。',
    d:function(){ var v={3:1,4:1,5:1,6:1}; drawTreeModel(T7,{visited:v,r:0.15});
      T7.nodes.forEach(function(n){ if(v[n.id]) label3([n.wx,n.wy-0.34,n.wz],'叶子','#9be7a8',0.085); }); }},
-  {t:'结点的度 = 有几个子节点',
+  {t:'结点的度 = 有几个子节点', s:'每个结点头顶上的这个数字，是它的度，也就是它有几个子节点。零表示没有，一表示一个，二表示两个。A 的度是二，D 的度是零。',
    p:'每个结点上方的数字就是它的<b>度</b>：0 表示没有子节点，1 表示只有一个，2 表示两个。A 的度是 2，D 的度是 0。<span class="em">度最大不超过 2</span>，这就是二叉树的"二"。',
    d:function(){ drawTreeModel(T7,{showDeg:true,r:0.15}); }},
-  {t:'层数、高度：树有多高',
+  {t:'层数、高度：树有多高', s:'根在第一层，往下每走一步加一层。这棵树最深到第三层，所以它的高度是三。高度就是从上到下，最远要走几步。',
    p:'根在第 <b>1 层</b>，往下每走一步层数 +1。这棵树最深到第 <b>3 层</b>，所以它的<b>高度（深度）是 3</b>。<span class="em">高度 = 从根到底最远要走几步</span>。',
    d:function(){ drawTreeModel(T7,{showLevel:true,r:0.15});
      label3([0,0.55,-2.6],'高度 = 3','#ffd479',0.14); }},
-  {t:'子树：每个结点自己也是一棵树',
+  {t:'子树：每个结点自己也是一棵树', s:'把 B 和它下面的 D、E 单独拎出来看，它自己也是一棵完整的二叉树，我们叫它 A 的左子树。所以树是递归的，大树里面套着小树。',
    p:'把 B 和它下面的 D、E 单独拎出来，它自己也是一棵完整的二叉树，称为 A 的<b>左子树</b>。所以"树"是递归的：大树里套小树。',
    d:function(){ drawTreeModel(T7,{r:0.15,highlight:{1:1,3:1,4:1}});
      label3([T7.nodes[1].wx,T7.nodes[1].wy+0.5,T7.nodes[1].wz],'左子树','#8fd3ff',0.12); }}
 ]},
 { name:'3 五大性质', steps:[
-  {t:'性质①：第 i 层最多 2^(i-1) 个结点',
+  {t:'性质①：第 i 层最多 2^(i-1) 个结点', s:'第一层只有根一个，第二层最多两个，第三层最多四个。每往下一层，每个结点都生出两个子节点，数量就翻一倍。所以第 i 层最多是二的 i 减一次方个。',
    p:'第 1 层只有 1 个（根）；第 2 层最多 2 个；第 3 层最多 4 个——每往下一层，每个结点都"生出"两个子节点，数量翻倍。所以第 i 层最多 <span class="em">2^(i-1)</span> 个。',
    d:function(o){ var t=o.t||0, layer=Math.min(3,1+Math.floor(t/1.6));
      var v={}; T7.nodes.forEach(function(n){ if(n.depth<layer) v[n.id]=1; });
@@ -384,17 +384,17 @@ var CHAPTERS=[
      var cnt=[1,2,4];
      HUDLINES=[{text:'第1层 1 个　第2层 2 个　第3层 4 个',color:'#ffd479',size:15},
                {text:'每层最多 2^(i-1) 个',color:'#8fd3ff',size:12}]; }},
-  {t:'性质②：高度 h 的树最多 2^h − 1 个结点',
+  {t:'性质②：高度 h 的树最多 2^h − 1 个结点', s:'把每层最多的加起来：一加二加四，等于七。这正是高度为三的满二叉树的结点数。一般地，高度为 h 的树最多有二的 h 次方减一个结点。',
    p:'把每层最多的数加起来：1 + 2 + 4 = 7。这正是高度 3 的满二叉树的结点数。一般地，<span class="em">1+2+4+…+2^(h-1) = 2^h − 1</span>。',
    d:function(){ drawTreeModel(T7,{visited:all(T7),r:0.15});
      HUDLINES=[{text:'1 + 2 + 4 = 7 = 2³ − 1',color:'#ffd479',size:16}]; }},
-  {t:'性质③：叶子数 = 度为 2 的结点数 + 1',
+  {t:'性质③：叶子数 = 度为 2 的结点数 + 1', s:'数一下：叶子四个，度为二的结点三个。四等于三加一。为什么呢？把每个度为二的结点想成一个分叉口：一根线进来，两根线出去。每分一次叉，就多出一个末端，所以叶子总比分叉口多一个。',
    p:'数一数：叶子 4 个（D、E、F、G），度为 2 的结点 3 个（A、B、C）。<b>4 = 3 + 1</b>。为什么？把每个度为 2 的结点想成"分叉口"：它一根线进来、两根线出去，<span class="em">每分一次叉，就多出一个末端</span>，所以叶子总比"分叉口"多 1。',
    d:function(){ var lv={3:1,4:1,5:1,6:1}, d2={0:1,1:1,2:1};
      drawTreeModel(T7,{r:0.15,visited:lv,highlight:d2});
      HUDLINES=[{text:'叶子 4 个（绿）　度=2 的结点 3 个（橙）',color:'#cfe0f5',size:14},
                {text:'n₀ = n₂ + 1　→　4 = 3 + 1',color:'#ffd479',size:16}]; }},
-  {t:'性质④：n 个结点的树，高度在什么范围',
+  {t:'性质④：n 个结点的树，高度在什么范围', s:'七个结点，最瘦的情况是一条斜线，高度就是七；最胖的情况是满二叉树，高度只有三。同样是七个结点，形状不同，高度差很多。',
    p:'最"瘦"的情况是一条斜线（每层 1 个），高度 = n；最"胖"的情况是满二叉树，高度 = ⌊log₂n⌋+1。同样 7 个结点，左边斜树高 7，右边满树高 3——<span class="em">形状不同，高度差很多</span>。',
    d:function(){ var S=buildTree('A#B#C#D##'); placeTree(S,-2.0,2.1,-2.6,0.62);
      drawTreeModel(S,{r:0.11});
@@ -404,21 +404,21 @@ var CHAPTERS=[
      label3([2.0,0.6,-2.6],'满树：高度 2','#9be7a8',0.09); }}
 ]},
 { name:'4 特殊二叉树', steps:[
-  {t:'满二叉树：每层都长满',
+  {t:'满二叉树：每层都长满', s:'这一棵每一层都长满了，一个空位都没有，叶子全在最下面一层。高度为 h 的满二叉树，结点数恰好是二的 h 次方减一，一个不多一个不少。',
    p:'三个结点一层的树，每一层都不能有空位，叶子全部在最下面一层。高度 h 的满二叉树恰好有 <span class="em">2^h − 1</span> 个结点，一个不多一个不少。',
    d:function(){ placeTree(T7,-2.5,2.15,-2.4,0.6); drawTreeModel(T7,{visited:all(T7),r:0.115});
      label3([-2.5,2.6,-2.4],'满二叉树','#9be7a8',0.11); }},
-  {t:'完全二叉树：从上到下、从左往右，连续填',
+  {t:'完全二叉树：从上到下、从左往右，连续填', s:'这一棵最后一层没填满，但它必须从左往右连续地填，中间不能空一个再填后面。像排队一样，前一个人没站好，后面的人就不能先占位置。',
    p:'最后一层可以不填满，但<b>必须从左往右连续填</b>，中间不能空一个再填后面。像排队：前一个人没站好，后面就不能先占位置。',
    d:function(){ placeTree(T6,-2.5,2.15,-2.4,0.6); drawTreeModel(T6,{visited:all(T6),r:0.115});
      label3([-2.5,2.6,-2.4],'完全二叉树（6 个）','#8fd3ff',0.105);
      var C=T6.nodes[T6.nodes[0].r];
      label3([C.wx,C.wy-0.45,C.wz],'允许这里缺','#ffd479',0.075); }},
-  {t:'平衡二叉树：左右高度差不超过 1',
+  {t:'平衡二叉树：左右高度差不超过 1', s:'平衡二叉树看的是左右两边的高度差。任何一个结点，两边高度差都不能超过一。它不要求满，只要求两边差不多高。',
    p:'平衡二叉树看的是<b>左右子树的高度差</b>，任何结点两边的高度差都不能超过 1。它不要求"满"，只要求"两边差不多高"。<span class="em">满二叉树一定平衡，完全二叉树不一定满</span>。',
    d:function(){ placeTree(T5,-2.5,2.15,-2.4,0.6); drawTreeModel(T5,{visited:all(T5),r:0.115});
      label3([-2.5,2.6,-2.4],'平衡二叉树','#c9a0ff',0.11); }},
-  {t:'三棵树同屏对比',
+  {t:'三棵树同屏对比', s:'三棵并排放在一起。左边是满的，每层都满；中间是完全的，最后一层从左往右连续；右边是平衡的，两边高度差不超过一，但可以不完整。考试就考这个区别：完全看位置连不连续，平衡看两边高度差。',
    p:'左：满（每层都满）；中：完全（最后一层从左连续）；右：平衡（左右高度差 ≤1，但可以不完整）。考试就考这个区别：<b>"完全"看位置连不连续，"平衡"看两边高度差</b>。',
    d:function(){
      var a=buildTree('ABD##E##CF##G##'); placeTree(a,-3.2,2.2,-2.4,0.52); drawTreeModel(a,{visited:all(a),r:0.09});
@@ -429,54 +429,54 @@ var CHAPTERS=[
      label3([3.2,2.6,-2.4],'平衡二叉树','#c9a0ff',0.1); }}
 ]},
 { name:'5 遍历', steps:[
-  {t:'先序：先看自己 → 左 → 右',
+  {t:'先序：先看自己 → 左 → 右', s:'先序的走法是：每到一个结点，先把自己记下来，再往左走；左边走不动了，回来往右走。所以记下来是 A、B、D、E、C、F、G。口诀就是：到点就记，先左后右。',
    p:'像走迷宫：<b>每到一个结点，先记下来</b>，再往左走；左边走不动了，再回来往右走。顺序是 <span class="em">A B D E C F G</span>。记住口诀：<b>到点就记，先左后右</b>。',
    d:function(o){ traversalDraw(T7,'pre',o); }},
-  {t:'中序：左走完 → 看自己 → 右走完',
+  {t:'中序：左走完 → 看自己 → 右走完', s:'中序先往左下走，一路走到最底下，才回头记自己，然后转向右子树。顺序是 D、B、E、A、F、C、G。在二叉排序树里，中序会得到从小到大的顺序，所以它最常用。',
    p:'先一路往左下走，到底了才记自己，然后转向右子树。<span class="em">D B E A F C G</span>。中序在二叉排序树里会得到从小到大的顺序，所以最重要。',
    d:function(o){ traversalDraw(T7,'in',o); }},
-  {t:'后序：左走完 → 右走完 → 最后才记自己',
+  {t:'后序：左走完 → 右走完 → 最后才记自己', s:'后序是把左右两边都处理完，最后才记录自己。顺序是 D、E、B、F、G、C、A。最后访问的一定是根，这个特点常用来倒推树的结构。',
    p:'左右两边都处理完，才轮到记录自己。<span class="em">D E B F G C A</span>。最后访问的一定是根 A —— 这个特点常用来倒推树结构。',
    d:function(o){ traversalDraw(T7,'post',o); }},
-  {t:'层次：一层一层，从左到右',
+  {t:'层次：一层一层，从左到右', s:'层次就是排队点名：先点第一层，再点第二层，再点第三层，每一层从左到右。它不用递归，而是用队列：出一个，就把它的子节点依次放到队尾。',
    p:'像排队点名：先点第 1 层，再点第 2 层，再点第 3 层，每层从左到右。<span class="em">A B C D E F G</span>。它不是递归，而是用<b>队列</b>：出一个，就把它的子节点依次放进队尾。',
    d:function(o){ traversalDraw(T7,'level',o); }},
-  {t:'四种遍历并排：同时跑一遍',
+  {t:'四种遍历并排：同时跑一遍', s:'现在四棵树一模一样，同时跑四种走法。你看先序，A 排在最前面；中序，A 夹在中间；后序，A 留到最后；层次，一层推一层。盯着看一遍，四种顺序就分清了。',
    p:'左边四棵树一模一样，只是走法不同。<b>先序</b>最快把根记下来（A 在最前）；<b>中序</b>把 A 夹在中间；<b>后序</b>把 A 留到最后；<b>层次</b>按层推进。盯着看一遍，四种顺序就分清了。',
    d:function(o){ fourUp(o); }},
 ]},
 { name:'6 存储', steps:[
-  {t:'顺序存储：把树放进数组',
+  {t:'顺序存储：把树放进数组', s:'顺序存储就是把树按层序编号，一二三四，直接塞进数组。完全二叉树一个空位都没有，一点空间都不浪费。下标关系也很好用：结点 i 的左子节点是二 i，右子节点是二 i 加一，双亲是 i 除以二取整。',
    p:'按"层序"编号 1、2、3…，直接放进数组。完全二叉树没有空位，<b>一点空间都不浪费</b>。下标关系很省事：结点 i 的左子节点是 2i、右子节点是 2i+1、双亲是 ⌊i/2⌋。',
    d:function(o){ arrayDraw(o); }},
-  {t:'顺序存储的代价：一般树会浪费',
+  {t:'顺序存储的代价：一般树会浪费', s:'但是如果树长得不规则，数组里就必须留空位。像右边这棵斜树，只有四个结点，却要占十五个格子。所以顺序存储只适合完全二叉树。',
    p:'如果树不是完全二叉树，数组里就必须留空位。像右边这棵斜树，只有 4 个结点却要占 15 个格子。<span class="em">所以顺序存储只适合完全二叉树</span>。',
    d:function(o){ wasteDraw(o); }},
-  {t:'链式存储：每个结点自带两个指针',
+  {t:'链式存储：每个结点自带两个指针', s:'链式存储是每个结点自己带两个指针：左子节点指针、数据、右子节点指针。想连哪里就指哪里，不管树长什么样都不浪费，代价是多花两个指针的空间。',
    p:'每个结点存三样东西：<b>左子节点指针、数据、右子节点指针</b>。想连哪就指哪，不管树长什么样都不浪费。代价是多花两个指针的空间——这是"用空间换灵活"。',
    d:function(o){ linkDraw(o); }}
 ]},
 { name:'7 哈夫曼树', steps:[
-  {t:'问题：给 4 个带权叶子，怎么建树最省',
+  {t:'问题：给 4 个带权叶子，怎么建树最省', s:'现在有四个数据，权重分别是二、四、五、七。权重越大，表示用得越多。把它们挂在树的不同深度上，总代价就是每个权重乘它的深度再加起来。我们的目标，是让这个总代价尽量小。',
    p:'有 4 个数据，权重分别是 <b>2、4、5、7</b>。权重越大表示用得越多。把它们挂在树的不同深度上，<b>WPL = Σ(权重 × 深度)</b> 就是"总代价"。目标：让 WPL 尽量小。',
    d:function(){ huffDraw(0); }},
-  {t:'第一步：挑两个最小的，合并',
+  {t:'第一步：挑两个最小的，合并', s:'第一步，从里面挑出最小的两个，二和四，合成一个新结点六，六就是它们的父亲。这样权重小的被压到更深的位置，正好符合次要数据放远处的直觉。',
    p:'每次从森林里挑<b>权重最小的两个</b>（2 和 4），合成一个新结点 6，6 就是它们的父亲。这样权重小的被压到更深的位置——正好符合"次要数据放远处"。',
    d:function(){ huffDraw(1); }},
-  {t:'继续合并，直到底层只剩一个',
+  {t:'继续合并，直到底层只剩一个', s:'现在剩下六、五、七。再挑最小的两个，五和六，合成十一。剩下七和十一，合成十八，它就是根。每一步都只挑当前最小的两个，这就叫贪心。',
    p:'现在森林是 {6, 5, 7}。再挑最小的两个：5 和 6 → 11。森林变成 {7, 11}。最后 7 和 11 合并 → 18，它就是根。<span class="em">每一步都只挑当前最小的两个</span>。',
    d:function(){ huffDraw(2); }},
-  {t:'算一算 WPL：为什么这样最小',
+  {t:'算一算 WPL：为什么这样最小', s:'算一下：二乘三，加四乘三，加五乘二，加七乘一，等于三十五。这就是最小的总代价。大权重靠近根，七只走一步；小权重远离根，二和四要走三步。乘的次数少，总和自然就小。',
    p:'2×3 + 4×3 + 5×2 + 7×1 = <b>35</b>。这就是最小的总代价。<b>大权重靠近根</b>（7 只走 1 步），<b>小权重远离根</b>（2、4 走 3 步）——乘的次数少，总和自然小。',
    d:function(){ huffDraw(3); }},
-  {t:'左右互换，形态不同但 WPL 一样',
+  {t:'左右互换，形态不同但 WPL 一样', s:'同样是这四个权重，把二和四换个左右位置，长出来的是两棵不同的树。但算一下总代价，都是三十五。所以哈夫曼树的形态不唯一，最小的总代价是唯一的。',
    p:'同样是 {2,4,5,7}，把 2 和 4 左右换个位置，长出来的是<b>两棵不同的树</b>——但算一下 WPL，都是 <span class="em">35</span>。所以哈夫曼树<b>形态不唯一</b>，<b>WPL 唯一最小</b>。考试给你任何一种形态，WPL 都一样。',
    d:function(o){ var t=o.t||0;
      huffVariant(-1.85,false,t); huffVariant(1.85,true,t);
      label3([-1.85,3.0,-2.5],'建法一（2 在左）','#8fd3ff',0.085);
      label3([1.85,3.0,-2.5],'建法二（2 在右）','#8fd3ff',0.085);
      HUDLINES=[{text:'形态不唯一 · WPL 都等于 35',color:'#ffd479',size:15}]; }},
-  {t:'两条要背的结论',
+  {t:'两条要背的结论', s:'两条要记住：第一，哈夫曼树没有度为一的结点，因为每次都是两个合成一个；第二，形态不唯一，但总代价一定相同，而且最小。',
    p:'① 哈夫曼树<b>没有度为 1 的结点</b>（每次都是两个合并成一个，必然成双成对）。② 树的<b>形态不唯一</b>（2 和 4 谁在左谁在右都行），但 <b>WPL 一定相同且最小</b>。',
    d:function(){ huffDraw(4); }}
 ]}
@@ -736,6 +736,22 @@ function voiceScore(v){
   if(v.localService) s+=5;
   return s;
 }
+function noZhVoiceNote(){
+  var bar=document.getElementById('notice');
+  if(!bar){
+    bar=document.createElement('div'); bar.id='notice';
+    bar.style.cssText='position:fixed;left:50%;bottom:150px;transform:translateX(-50%);z-index:50;'+
+      'background:rgba(60,44,12,.95);border:1px solid #8a6a22;color:#ffd9a0;padding:9px 14px;'+
+      'border-radius:9px;font-size:12.5px;line-height:1.7;max-width:min(680px,92vw);text-align:center';
+    document.body.appendChild(bar);
+  }
+  bar.innerHTML='本机没有检测到可用的中文语音，旁白已自动关闭（画面讲解不受影响）。<br>'+
+    '想在任何电脑上都有声音：把录音放进 <b>audio/c章节_步骤.mp3</b>（如 audio/c1_s1.mp3），页面会自动优先播放音频。<br>'+
+    '想听声音：Windows 设置 → 时间和语言 → 语言 → 中文（简体）→ 选项 → 下载“语音包”，装完刷新页面即可。'+
+    '<span style="float:right;margin-left:12px;color:#c9a866;cursor:pointer">✕</span>';
+  bar.lastChild.onclick=function(){ bar.style.display='none'; };
+  bar.style.display='block';
+}
 function loadVoices(){
   if(!window.speechSynthesis) return;
   var all=speechSynthesis.getVoices()||[];
@@ -743,6 +759,8 @@ function loadVoices(){
   if(!TTS.voices.length) TTS.voices=all.slice(0,6);
   TTS.voices.sort(function(a,b){ return voiceScore(b)-voiceScore(a); });
   if(!TTS.voice && TTS.voices.length) TTS.voice=TTS.voices[0];
+  var hasZh=TTS.voices.some(function(v){ return /^zh/i.test(v.lang); });
+  if(!hasZh && document.getElementById('tts')){ document.getElementById('tts').style.opacity='.55'; document.getElementById('tts').title='本机无中文语音'; }
   var sel=document.getElementById('voiceSel');
   if(sel){
     sel.innerHTML='';
@@ -757,6 +775,22 @@ function loadVoices(){
 }
 if(window.speechSynthesis){ loadVoices(); speechSynthesis.onvoiceschanged=loadVoices; }
 window.__toSpeech=toSpeech;
+var AUD=new Audio(), AUDcache={}, AUDcur=null;
+function audioPath(){ return 'audio/c'+(S.c+1)+'_s'+(S.s+1)+'.mp3'; }
+function tryAudio(step){
+  var p=audioPath();
+  if(AUDcache[p]===false) return false;
+  if(AUDcache[p]===true){ AUDcur=AUD; AUD.src=p; AUD.play().catch(function(){}); return true; }
+  // 探测：加载一次看能不能读
+  try{
+    AUDcur=new Audio(p);
+    AUDcur.preload='auto';
+    AUDcur.oncanplaythrough=function(){ AUDcache[p]=true; AUDcur.play().catch(function(){}); };
+    AUDcur.onerror=function(){ AUDcache[p]=false; if(TTS.on) speak((step.s||step.t)); };
+  }catch(e){ AUDcache[p]=false; return false; }
+  return true;
+}
+
 function speak(text){
   if(!TTS.on||!window.speechSynthesis) return;
   var t=toSpeech(text); if(!t) return;
@@ -800,11 +834,10 @@ function render(now){
 }
 function updateCaption(){
   var st=step(); if(!st) return;
-  if(TTS.on){
-    var prefix=(S._lastC!==S.c)?(chapter().name+'。'):'';
-    S._lastC=S.c;
-    speak(prefix + st.t + '。' + st.p);
-  }
+  if(AUDcur){ try{ AUDcur.pause(); }catch(e){} }
+  var pre=(S._lastC!==S.c)?(chapter().name+'。'):'';
+  S._lastC=S.c;
+  tryAudio(st, pre + (st.s || (st.t + '。' + st.p)));
   document.getElementById('capT').textContent=chapter().name+' · '+st.t;
   document.getElementById('capB').innerHTML=st.p;
   document.getElementById('prog').textContent=(S.s+1)+' / '+chapter().steps.length;
@@ -834,6 +867,7 @@ document.getElementById('rateSel').addEventListener('change',function(){
 });
 document.getElementById('tts').addEventListener('click',function(){
   if(!window.speechSynthesis){ alert('当前浏览器不支持语音合成（请用 Chrome / Edge / Safari）'); return; }
+  if(!TTS.voices.some(function(v){ return /^zh/i.test(v.lang); })){ noZhVoiceNote(); return; }
   TTS.on=!TTS.on; this.classList.toggle('on',TTS.on);
   if(TTS.on){ speak('语音旁白已开启'); } else { speechSynthesis.cancel(); }
 });
